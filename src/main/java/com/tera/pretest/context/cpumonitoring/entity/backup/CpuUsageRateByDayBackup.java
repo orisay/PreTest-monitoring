@@ -18,8 +18,6 @@ public class CpuUsageRateByDayBackup extends BaseEntity {
     @Id
     @Column(name = "CPU_RATE_BY_DAY_SEQ", columnDefinition = "BIGINT")
     private Long cpuRateByDaySeq;
-    @Column(name = "USAGE")
-    private Double usage;
     @Column(name = "AVERAGE")
     private Double average;
     @Column(name = "MAXIMUM_USAGE")
