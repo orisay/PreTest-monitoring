@@ -2,11 +2,12 @@ package com.tera.pretest.context.cpumonitoring.entity.base;
 
 import com.tera.pretest.core.entity.BaseEntity;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
 
-@Setter
 @ToString
+@SuperBuilder
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,4 +20,10 @@ public class CpuUsageRateByMinute extends BaseEntity { //1주일 보관 후 백�
     private Long cpuRateByMinuteSeq;
     @Column(name = "USAGE")
     private Double usage;
+
+    public static CpuUsageRateByMinute toBuild(Double averageUsage){
+        return CpuUsageRateByMinute.builder()
+                .usage(averageUsage)
+                .build();
+    }
 }
