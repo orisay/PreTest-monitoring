@@ -7,7 +7,6 @@ import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayR
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
 import com.tera.pretest.core.exception.CustomException;
-import com.tera.pretest.core.monitoring.contant.MonitoringConstant;
 import com.tera.pretest.core.util.DateUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -77,7 +76,7 @@ public class CpuMonitoringManageService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveAverageCpuUsageByHour() {
         List<CpuUsageRateByMinute> cpuAverageStats = getMonitoringCpUsageByOneMinuteStats();
-        DoubleSummaryStatistics stats = cpuAverageStats.stream().mapToDouble(CpuUsageRateByMinute::getUsage).summaryStatistics();
+        DoubleSummaryStatistics stats = cpuAverageStats.stream().mapToDouble(CpuUsageRateByMinute::getUsageRate).summaryStatistics();
         double averageUsage = changeDecimalFormatCpuUsage(stats.getAverage());
         double minimumUsage = changeDecimalFormatCpuUsage(stats.getMin());
         double maximumUsage = changeDecimalFormatCpuUsage(stats.getMax());

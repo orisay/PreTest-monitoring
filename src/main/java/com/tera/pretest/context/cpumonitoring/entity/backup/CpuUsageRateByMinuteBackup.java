@@ -26,13 +26,13 @@ public class CpuUsageRateByMinuteBackup extends BaseEntity { //1주일 보관 �
     @Id
     @Column(name = "CPU_RATE_BY_MINUTE_SEQ", columnDefinition = "BIGINT")
     private Long cpuRateByMinuteSeq;
-    @Column(name = "USAGE")
-    private Double usage;
+    @Column(name = "USAGE_RATE")
+    private Double usageRate;
 
     public static CpuUsageRateByMinuteBackup toBuild(CpuUsageRateByMinute backupData){
         return CpuUsageRateByMinuteBackup.builder()
                 .cpuRateByMinuteSeq(backupData.getCpuRateByMinuteSeq())
-                .usage(backupData.getUsage())
+                .usageRate(backupData.getUsageRate())
                 .createTime(backupData.getCreateTime())
                 .build();
 
