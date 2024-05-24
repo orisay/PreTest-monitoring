@@ -24,10 +24,10 @@ public class ThrowExceptionAspect {
             String errorMessage = Arrays.toString(nullPointerException.getStackTrace());
             log.error("Start Root: {}, Method: {}, with arguments: {}, UserSeq:{}, Error: {} "
                     , path, method, methodArgs, errorMessage);
-
+            throw nullPointerException;
         } catch (Throwable throwable) {
             throw throwable;
         }
-
     }
+
 }
