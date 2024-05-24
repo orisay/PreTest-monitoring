@@ -7,17 +7,20 @@ import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayR
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
 import com.tera.pretest.core.exception.CustomException;
+import com.tera.pretest.core.monitoring.contant.MonitoringConstant;
+import com.tera.pretest.core.util.DateUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import oshi.hardware.CentralProcessor;
 
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.stream.DoubleStream;
@@ -33,10 +36,13 @@ public class CpuMonitoringManageService {
     private final CpuUsageRateByMinuteRepository cpuUsageRateByMinuteRepository;
     private final CpuUsageRateByHourRepository cpuUsageRateByHourRepository;
     private final CpuUsageRateByDayRepository cpuUsageRateByDayRepository;
+    private final CpuMonitoringBackupService cpuMonitoringBackupService;
+    private DateUtil dateUtil;
 
 
     @Async("daemonThreadForAsync")
     @Retryable(value = {InterruptedException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveMonitoringCpuUsage() {
         Double averageCpuUsage = getAverageCpuUsageByOneMinute();
         Double decimalFormatCpuUsage = changeDecimalFormatCpuUsage(averageCpuUsage);
@@ -68,6 +74,7 @@ public class CpuMonitoringManageService {
 
     @Async("daemonThreadForAsync")
     @Retryable(value = {CustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveAverageCpuUsageByHour() {
         List<CpuUsageRateByMinute> cpuAverageStats = getMonitoringCpUsageByOneMinuteStats();
         DoubleSummaryStatistics stats = cpuAverageStats.stream().mapToDouble(CpuUsageRateByMinute::getUsage).summaryStatistics();
@@ -78,9 +85,10 @@ public class CpuMonitoringManageService {
     }
 
     private List<CpuUsageRateByMinute> getMonitoringCpUsageByOneMinuteStats() {
-        LocalDateTime endTime = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
-        LocalDateTime startTime = endTime.minusHours(ONE_HOUR);
-        List<CpuUsageRateByMinute> cpuUsageAverageStats = cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startTime, endTime);
+        Timestamp endTime = dateUtil.getTodayTruncatedToHour();
+        Timestamp startTime = dateUtil.getSearchHour(ONE_HOUR);
+        List<CpuUsageRateByMinute> cpuUsageAverageStats =
+                cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startTime, endTime);
         if (cpuUsageAverageStats.isEmpty())
             throw new CustomException(NOT_FOUND_DATA);
         return cpuUsageAverageStats;
@@ -88,6 +96,7 @@ public class CpuMonitoringManageService {
 
     @Async("daemonThreadForAsync")
     @Retryable(value = {CustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveAverageCpuUsageByDay() {
         List<CpuUsageRateByHour> stats = getMonitoringCpUsageByOneHourStats();
         double averageUsage = changeDecimalFormatCpuUsage(stats.stream().mapToDouble(CpuUsageRateByHour::getAverage)
@@ -101,11 +110,43 @@ public class CpuMonitoringManageService {
     }
 
     private List<CpuUsageRateByHour> getMonitoringCpUsageByOneHourStats() {
-        LocalDateTime endDay = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS);
-        LocalDateTime startDay = endDay.minusDays(ONE_DAY);
+        Timestamp endDay = dateUtil.getTodayTruncatedToDay();
+        Timestamp startDay = dateUtil.getSearchDay(ONE_DAY);
         List<CpuUsageRateByHour> cpuUsageStats = cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay);
         if (cpuUsageStats.isEmpty())
             throw new CustomException(NOT_FOUND_DATA);
         return cpuUsageStats;
     }
+
+    //아래부터는 softDelete 작업
+    @Async
+    @Retryable(value = {CustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void softDeleteAndBackupCpuUsageStatsByMinute() {
+        Timestamp pastDay = dateUtil.getSearchDay(ONE_WEEK);
+        cpuUsageRateByMinuteRepository.softDeleteOldData(pastDay);
+        List<CpuUsageRateByMinute> oldData = cpuUsageRateByMinuteRepository.findByFlag(DELETE_FLAG);
+        cpuMonitoringBackupService.backupCpuUsageStatsByMinute(oldData);
+    }
+
+    @Async
+    @Retryable(value = {CustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void softDeleteAndBackupOutdatedCpuUsageStatsByHour() {
+        Timestamp pastDay = dateUtil.getSearchMonth(THREE_MONTH);
+        cpuUsageRateByHourRepository.softDeleteOldData(pastDay);
+        List<CpuUsageRateByHour> oldData = cpuUsageRateByHourRepository.findByFlag(DELETE_FLAG);
+        cpuMonitoringBackupService.backupCpuUsageStatsByHour(oldData);
+    }
+
+    @Async
+    @Retryable(value = {CustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void softDeleteAndBackupOutdatedCpuUsageStatsByDay() {
+        Timestamp pastDay = dateUtil.getSearchYear(ONE_YEAR);
+        cpuUsageRateByDayRepository.softDeleteOldData(pastDay);
+        List<CpuUsageRateByDay> oldData =cpuUsageRateByDayRepository.findByFlag(DELETE_FLAG);
+        cpuMonitoringBackupService.backupCpuUsageStatsByDay(oldData);
+    }
+
 }
