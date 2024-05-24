@@ -1,7 +1,10 @@
 package com.tera.pretest.context.cpumonitoring.entity.base;
 
 import com.tera.pretest.core.entity.BaseEntity;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
@@ -13,7 +16,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Table(name = "TB_CPU_USAGE_RATE_BY_HOUR")
 @Entity
-public class CpuUsageRateByHour extends BaseEntity { //3달 보관 후 백업
+public class CpuUsageRateByHour extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CPU_RATE_BY_HOUR_SEQ",columnDefinition = "BIGINT")

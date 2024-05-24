@@ -10,7 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Getter
 @SuperBuilder
@@ -23,10 +23,10 @@ public class BaseEntity {
 
     @CreatedDate
     @Column(updatable = false)
-    private LocalDateTime createTime;
+    private Timestamp createTime;
 
     @UpdateTimestamp
-    private LocalDateTime updateTIme;
+    private Timestamp  updateTIme;
 
 
 }
