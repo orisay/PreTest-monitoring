@@ -9,6 +9,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
 import static com.tera.pretest.core.monitoring.contant.MonitoringConstant.ONE_DAY;
+import static com.tera.pretest.core.monitoring.contant.MonitoringConstant.ONE_HOUR;
 
 @Component
 public class DateUtil {
@@ -31,6 +32,18 @@ public class DateUtil {
         ZonedDateTime today = inputDay.toInstant().atZone(ZoneId.systemDefault());
         ZonedDateTime addOneDay = today.plusDays(ONE_DAY);
         return Timestamp.from(addOneDay.toInstant());
+    }
+
+    public Timestamp addOneHour(Timestamp inputDay){
+        ZonedDateTime startDay = inputDay.toInstant().atZone(ZoneId.systemDefault());
+        ZonedDateTime addOneHour = startDay.plusHours(ONE_HOUR);
+        return  Timestamp.from(addOneHour.toInstant());
+    }
+
+    public Timestamp addOneDayByInputDay(Timestamp inputDay){
+        ZonedDateTime day = inputDay.toInstant().atZone(ZoneId.systemDefault());
+        ZonedDateTime addOneDay = day.plusDays(ONE_DAY);
+        return  Timestamp.from(addOneDay.toInstant());
     }
 
 

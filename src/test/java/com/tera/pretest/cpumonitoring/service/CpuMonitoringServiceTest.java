@@ -60,13 +60,13 @@ public class CpuMonitoringServiceTest {
             Timestamp startDay = Timestamp.valueOf("2024-05-23 00:00:00");
             Timestamp endDay = Timestamp.valueOf("2024-05-23 01:00:00");
 
-            when(dateUtil.truncateTimestampToHour(any())).thenReturn(startDay, endDay);
+            when(dateUtil.truncateTimestampToHour(any())).thenReturn(startDay);
+            when(dateUtil.addOneHour(any())).thenReturn(endDay);
             when(cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startDay, endDay))
                     .thenReturn(Collections.singletonList(new CpuUsageRateByMinute()));
 
-            ResultCpuUsageRateByMinute result = cpuMonitoringService.getCpuUsageRateByMinute(new GetCpuUsageRateByMinute(startDay, endDay));
+            ResultCpuUsageRateByMinute result = cpuMonitoringService.getCpuUsageRateByMinute(new GetCpuUsageRateByMinute(startDay));
             assertFalse("빈 객체 반환.", result.getStatsUsage().isEmpty());
-
         }
 
         @Test
@@ -75,11 +75,12 @@ public class CpuMonitoringServiceTest {
             Timestamp startDay = Timestamp.valueOf("2024-05-23 00:00:00");
             Timestamp endDay = Timestamp.valueOf("2024-05-25 01:00:00");
 
-            when(dateUtil.truncateTimestampToHour(any())).thenReturn(startDay, endDay);
+            when(dateUtil.truncateTimestampToHour(any())).thenReturn(startDay);
+            when(dateUtil.addOneHour(any())).thenReturn(endDay);
             when(cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startDay, endDay))
                     .thenReturn(Collections.emptyList());
             assertThrows(CustomException.class, () -> {
-                cpuMonitoringService.getCpuUsageRateByMinute(new GetCpuUsageRateByMinute(startDay, endDay));
+                cpuMonitoringService.getCpuUsageRateByMinute(new GetCpuUsageRateByMinute(startDay));
             });
         }
     }
@@ -93,10 +94,11 @@ public class CpuMonitoringServiceTest {
         void successGetCpuUsageRateByHourTest() throws Exception {
             Timestamp startDay = Timestamp.valueOf("2024-05-20 00:00:00");
             Timestamp endDay = Timestamp.valueOf("2024-05-21 00:00:00");
-            when(dateUtil.truncateTimestampToDay(any())).thenReturn(startDay, endDay);
+            when(dateUtil.truncateTimestampToDay(any())).thenReturn(startDay);
+            when(dateUtil.addOneDayByInputDay(any())).thenReturn(endDay);
             when(cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay))
                     .thenReturn(Collections.singletonList(new CpuUsageRateByHour()));
-            ResultCpuUsageRateByHour result = cpuMonitoringService.getCpuUsageRateByHour(new GetCpuUsageRateByHour(startDay, endDay));
+            ResultCpuUsageRateByHour result = cpuMonitoringService.getCpuUsageRateByHour(new GetCpuUsageRateByHour(startDay));
             assertFalse("빈 객체 반환", result.getStatsUsage().isEmpty());
 
         }
@@ -107,11 +109,12 @@ public class CpuMonitoringServiceTest {
             Timestamp startDay = Timestamp.valueOf("2024-05-20 00:00:00");
             Timestamp endDay = Timestamp.valueOf("2024-05-21 00:00:00");
 
-            when(dateUtil.truncateTimestampToDay(any())).thenReturn(startDay, endDay);
+            when(dateUtil.truncateTimestampToDay(any())).thenReturn(startDay);
+            when(dateUtil.addOneDayByInputDay(any())).thenReturn(endDay);
             when(cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay))
                     .thenReturn(Collections.emptyList());
             assertThrows(CustomException.class, () -> {
-                cpuMonitoringService.getCpuUsageRateByHour(new GetCpuUsageRateByHour(startDay, endDay));
+                cpuMonitoringService.getCpuUsageRateByHour(new GetCpuUsageRateByHour(startDay));
             });
 
         }

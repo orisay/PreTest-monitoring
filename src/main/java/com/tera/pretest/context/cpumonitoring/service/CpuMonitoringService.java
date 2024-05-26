@@ -36,9 +36,8 @@ public class CpuMonitoringService {
     @Transactional(readOnly = true)
     public ResultCpuUsageRateByMinute getCpuUsageRateByMinute(GetCpuUsageRateByMinute getCpuUsageRateByMinute) {
         Timestamp startDay = dateUtil.truncateTimestampToHour(getCpuUsageRateByMinute.getStartDay());
-        Timestamp endDay = dateUtil.truncateTimestampToHour(getCpuUsageRateByMinute.getEndDay());
-        Timestamp exactEndDay = exactEndDayData(endDay);
-        List<CpuUsageRateByMinute> statsData = cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startDay, exactEndDay);
+        Timestamp endDay = dateUtil.addOneHour(startDay);
+        List<CpuUsageRateByMinute> statsData = cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startDay, endDay);
         if(statsData.isEmpty())
             throw new CustomException(NOT_FOUND_DATA);
         return ResultCpuUsageRateByMinute.toBuild(statsData);
@@ -48,9 +47,8 @@ public class CpuMonitoringService {
     @Transactional(readOnly = true)
     public ResultCpuUsageRateByHour getCpuUsageRateByHour(GetCpuUsageRateByHour getCpuUsageRateByHour) {
         Timestamp startDay = dateUtil.truncateTimestampToDay(getCpuUsageRateByHour.getStartDay());
-        Timestamp endDay = dateUtil.truncateTimestampToDay(getCpuUsageRateByHour.getEndDay());
-        Timestamp exactEndDay = exactEndDayData(endDay);
-        List<CpuUsageRateByHour> statsData = cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, exactEndDay);
+        Timestamp endDay = dateUtil.addOneDayByInputDay(startDay);
+        List<CpuUsageRateByHour> statsData = cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay);
         if(statsData.isEmpty())
             throw new CustomException(NOT_FOUND_DATA);
         return ResultCpuUsageRateByHour.toBuild(statsData);
