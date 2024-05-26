@@ -1,6 +1,5 @@
 package com.tera.pretest.context.cpumonitoring.entity.backup;
 
-import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByDay;
 import com.tera.pretest.core.entity.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,8 +11,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @ToString
 @SuperBuilder
@@ -33,21 +30,5 @@ public class CpuUsageRateByDayBackup extends BaseEntity {
     private Double maximumUsage;
     @Column(name = "MINIMUM_USAGE")
     private Double minimumUsage;
-
-    public static CpuUsageRateByDayBackup toBuild(CpuUsageRateByDay backupData){
-        return CpuUsageRateByDayBackup.builder()
-                .cpuRateByDaySeq(backupData.getCpuRateByDaySeq())
-                .average(backupData.getAverage())
-                .maximumUsage(backupData.getMaximumUsage())
-                .minimumUsage(backupData.getMinimumUsage())
-                .createTime(backupData.getCreateTime())
-                .build();
-    }
-
-    public static List<CpuUsageRateByDayBackup> toBackupData(List<CpuUsageRateByDay> backupData){
-        return backupData.stream().map(CpuUsageRateByDayBackup::toBuild).collect(Collectors.toList());
-
-
-    }
 
 }

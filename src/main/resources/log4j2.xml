@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
     <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n"/>
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
+        <RollingFile name="ExceptionLog" fileName="logs/Exception/Exception-logs.log" filePattern="logs/%d{yyyy-MM-dd}/currentTime-logs-%d{yyyy-MM-dd}.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
+            <TimeBasedTriggeringPolicy />
+        </RollingFile>
     </Appenders>
     <Loggers>
+        <Logger name="com.tera.pretest.core.aop.aspect.ThrowExceptionAspect" level="error" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="ExceptionLog"/>
+        </Logger>
         <Root level="info">
-            <AppenderRef ref="Console"/>
+            <AppenderRef ref="ConsoleAppender"/>
         </Root>
     </Loggers>
 </Configuration>

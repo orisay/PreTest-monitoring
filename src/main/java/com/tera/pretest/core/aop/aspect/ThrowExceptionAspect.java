@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 @Log4j2
 @Aspect
@@ -20,13 +21,16 @@ public class ThrowExceptionAspect {
         Object[] methodArgs = proceedingJoinPoint.getArgs();
         try {
             return proceedingJoinPoint.proceed();
-        } catch (NullPointerException nullPointerException) {
-            String errorMessage = Arrays.toString(nullPointerException.getStackTrace());
-            log.error("Start Root: {}, Method: {}, with arguments: {}, UserSeq:{}, Error: {} "
-                    , path, method, methodArgs, errorMessage);
-            throw nullPointerException;
-        } catch (Throwable throwable) {
-            throw throwable;
+        } catch (NullPointerException | ExecutionException asyncException) {
+            String errorMessage = Arrays.toString(asyncException.getStackTrace());
+            log.error("Start Root: {}, Method: {}, with arguments: {}, Error: {} "
+                    , path, method, methodArgs, errorMessage, asyncException);
+            throw asyncException;
+        } catch (Throwable exception) {
+            String errorMessage = Arrays.toString(exception.getStackTrace());
+            log.error("Start Root: {}, Method: {}, with arguments: {}, Error: {} "
+                    , path, method, methodArgs, errorMessage, exception);
+            throw exception;
         }
     }
 

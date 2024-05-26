@@ -5,5 +5,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CpuUsageRateByMinuteBackupRepository extends JpaRepository<CpuUsageRateByMinuteBackup, Long> {
 
-    long deleteByFlag(String flag);
 }
