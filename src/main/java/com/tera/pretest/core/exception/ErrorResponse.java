@@ -12,7 +12,10 @@ public class ErrorResponse {
     private final String error;
     private final String message;
 
-    public static ResponseEntity<ErrorResponse> errorResponse(){
-        return null;
+    public static ErrorResponse of(String error, String message) {
+        return ErrorResponse.builder()
+                .error(error)
+                .message(message)
+                .build();
     }
 }

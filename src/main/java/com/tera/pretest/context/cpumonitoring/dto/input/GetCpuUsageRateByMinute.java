@@ -12,5 +12,4 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 public class GetCpuUsageRateByMinute {
     private Timestamp startDay;
-    private Timestamp endDay;
 }
