@@ -14,9 +14,11 @@ import java.util.concurrent.TimeUnit;
 import static com.tera.pretest.core.monitoring.contant.MonitoringConstant.*;
 import static com.tera.pretest.core.monitoring.contant.MonitoringScheduledConstant.*;
 
+//TODO 데이터 수집 실패 시 예외를 처리하고 로그를 남깁니다. -> AOP 작업
 @Log4j2
 @Component
 public class CpuMonitoring {
+
     private final CpuMonitoringManageService cpuMonitoringManageService;
     private final ScheduledExecutorService scheduledExecutorService;
     private final CpuMonitoringBackupService cpuMonitoringBackupService;

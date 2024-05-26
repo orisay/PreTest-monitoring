@@ -16,7 +16,11 @@ public final class MonitoringConstant {
 
     public static final int ONE_HOUR = 1;
 
+    public static final int ONE_HOUR_BY_MS = 3600000;
+
     public static final int ONE_DAY = 1;
+
+    public static final int ONE_DAY_BY_MS = 86400000;
 
     public static final int ONE_YEAR = 1;
 

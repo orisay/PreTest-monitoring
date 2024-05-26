@@ -1,6 +1,16 @@
 package com.tera.pretest.context.cpumonitoring.dto.input;
 
+import lombok.*;
+
+import java.sql.Timestamp;
+
+@ToString
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class GetCpuUsageRateByDay {
-    private String startDay;  //20230501
-    private String endDay; //20240430
+    private Timestamp startDay;
+    private Timestamp endDay;
 }

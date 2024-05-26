@@ -18,4 +18,6 @@ public interface CpuUsageRateByHourRepository extends JpaRepository<CpuUsageRate
 
     List<CpuUsageRateByHour> findByFlag(String flag);
 
+    long deleteByFlag(String flag);
+
 }

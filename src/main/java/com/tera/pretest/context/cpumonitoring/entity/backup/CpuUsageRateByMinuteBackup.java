@@ -1,6 +1,5 @@
 package com.tera.pretest.context.cpumonitoring.entity.backup;
 
-import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
 import com.tera.pretest.core.entity.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,8 +11,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @ToString
 @SuperBuilder
@@ -26,22 +23,7 @@ public class CpuUsageRateByMinuteBackup extends BaseEntity { //1주일 보관 �
     @Id
     @Column(name = "CPU_RATE_BY_MINUTE_SEQ", columnDefinition = "BIGINT")
     private Long cpuRateByMinuteSeq;
-    @Column(name = "USAGE")
-    private Double usage;
+    @Column(name = "USAGE_RATE")
+    private Double usageRate;
 
-    public static CpuUsageRateByMinuteBackup toBuild(CpuUsageRateByMinute backupData){
-        return CpuUsageRateByMinuteBackup.builder()
-                .cpuRateByMinuteSeq(backupData.getCpuRateByMinuteSeq())
-                .usage(backupData.getUsage())
-                .createTime(backupData.getCreateTime())
-                .build();
-
-    }
-
-    public static List<CpuUsageRateByMinuteBackup> toBackupData(List<CpuUsageRateByMinute> backupData){
-        return backupData.stream()
-                .map(CpuUsageRateByMinuteBackup::toBuild)
-                .collect(Collectors.toList());
-
-    }
 }

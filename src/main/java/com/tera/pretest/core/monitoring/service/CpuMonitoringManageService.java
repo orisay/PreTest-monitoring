@@ -7,13 +7,13 @@ import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayR
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
 import com.tera.pretest.core.exception.CustomException;
-import com.tera.pretest.core.monitoring.contant.MonitoringConstant;
 import com.tera.pretest.core.util.DateUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.stream.DoubleStream;
 
 import static com.tera.pretest.core.exception.CustomExceptionCode.NOT_FOUND_DATA;
@@ -43,10 +44,11 @@ public class CpuMonitoringManageService {
     @Async("daemonThreadForAsync")
     @Retryable(value = {InterruptedException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveMonitoringCpuUsage() {
+    public Future<Void> saveMonitoringCpuUsage() {
         Double averageCpuUsage = getAverageCpuUsageByOneMinute();
         Double decimalFormatCpuUsage = changeDecimalFormatCpuUsage(averageCpuUsage);
         cpuUsageRateByMinuteRepository.save(CpuUsageRateByMinute.toBuild(decimalFormatCpuUsage));
+        return AsyncResult.forValue(null);
     }
 
     private Double getAverageCpuUsageByOneMinute() {
@@ -67,6 +69,7 @@ public class CpuMonitoringManageService {
         return changeDecimalFormatCpuUsage(averageCpuUsage);
     }
 
+
     private Double changeDecimalFormatCpuUsage(Double cpuUsage) {
         DecimalFormat roundUsage = new DecimalFormat("0.00");
         return Double.parseDouble(roundUsage.format(cpuUsage));
@@ -75,13 +78,14 @@ public class CpuMonitoringManageService {
     @Async("daemonThreadForAsync")
     @Retryable(value = {CustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveAverageCpuUsageByHour() {
+    public Future<Void> saveAverageCpuUsageByHour() {
         List<CpuUsageRateByMinute> cpuAverageStats = getMonitoringCpUsageByOneMinuteStats();
-        DoubleSummaryStatistics stats = cpuAverageStats.stream().mapToDouble(CpuUsageRateByMinute::getUsage).summaryStatistics();
+        DoubleSummaryStatistics stats = cpuAverageStats.stream().mapToDouble(CpuUsageRateByMinute::getUsageRate).summaryStatistics();
         double averageUsage = changeDecimalFormatCpuUsage(stats.getAverage());
         double minimumUsage = changeDecimalFormatCpuUsage(stats.getMin());
         double maximumUsage = changeDecimalFormatCpuUsage(stats.getMax());
         cpuUsageRateByHourRepository.save(CpuUsageRateByHour.toBuild(averageUsage, minimumUsage, maximumUsage));
+        return AsyncResult.forValue(null);
     }
 
     private List<CpuUsageRateByMinute> getMonitoringCpUsageByOneMinuteStats() {
@@ -97,7 +101,7 @@ public class CpuMonitoringManageService {
     @Async("daemonThreadForAsync")
     @Retryable(value = {CustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveAverageCpuUsageByDay() {
+    public Future<Void> saveAverageCpuUsageByDay() {
         List<CpuUsageRateByHour> stats = getMonitoringCpUsageByOneHourStats();
         double averageUsage = changeDecimalFormatCpuUsage(stats.stream().mapToDouble(CpuUsageRateByHour::getAverage)
                 .summaryStatistics().getAverage());
@@ -106,6 +110,7 @@ public class CpuMonitoringManageService {
         double maximumUsage = changeDecimalFormatCpuUsage(stats.stream().mapToDouble(CpuUsageRateByHour::getMaximumUsage)
                 .max().orElseThrow(() -> new CustomException(NOT_FOUND_DATA)));
         cpuUsageRateByDayRepository.save(CpuUsageRateByDay.toBuild(averageUsage, minimumUsage, maximumUsage));
+        return AsyncResult.forValue(null);
 
     }
 
@@ -122,31 +127,40 @@ public class CpuMonitoringManageService {
     @Async
     @Retryable(value = {CustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void softDeleteAndBackupCpuUsageStatsByMinute() {
+    public Future<Void> softDeleteAndBackupCpuUsageStatsByMinute() {
         Timestamp pastDay = dateUtil.getSearchDay(ONE_WEEK);
         cpuUsageRateByMinuteRepository.softDeleteOldData(pastDay);
         List<CpuUsageRateByMinute> oldData = cpuUsageRateByMinuteRepository.findByFlag(DELETE_FLAG);
+        if(oldData.isEmpty())
+            throw new CustomException(NOT_FOUND_DATA);
         cpuMonitoringBackupService.backupCpuUsageStatsByMinute(oldData);
+        return AsyncResult.forValue(null);
     }
 
     @Async
     @Retryable(value = {CustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void softDeleteAndBackupOutdatedCpuUsageStatsByHour() {
+    public Future<Void> softDeleteAndBackupOutdatedCpuUsageStatsByHour() {
         Timestamp pastDay = dateUtil.getSearchMonth(THREE_MONTH);
         cpuUsageRateByHourRepository.softDeleteOldData(pastDay);
         List<CpuUsageRateByHour> oldData = cpuUsageRateByHourRepository.findByFlag(DELETE_FLAG);
+        if(oldData.isEmpty())
+            throw new CustomException(NOT_FOUND_DATA);
         cpuMonitoringBackupService.backupCpuUsageStatsByHour(oldData);
+        return AsyncResult.forValue(null);
     }
 
     @Async
     @Retryable(value = {CustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void softDeleteAndBackupOutdatedCpuUsageStatsByDay() {
+    public Future<Void> softDeleteAndBackupOutdatedCpuUsageStatsByDay() {
         Timestamp pastDay = dateUtil.getSearchYear(ONE_YEAR);
         cpuUsageRateByDayRepository.softDeleteOldData(pastDay);
         List<CpuUsageRateByDay> oldData =cpuUsageRateByDayRepository.findByFlag(DELETE_FLAG);
+        if(oldData.isEmpty())
+            throw new CustomException(NOT_FOUND_DATA);
         cpuMonitoringBackupService.backupCpuUsageStatsByDay(oldData);
+        return AsyncResult.forValue(null);
     }
 
 }
