@@ -1,6 +1,25 @@
 package com.tera.pretest.context.cpumonitoring.dto.input;
 
+import lombok.*;
+
+import javax.validation.constraints.FutureOrPresent;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
+import java.sql.Timestamp;
+
+@ToString
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class GetCpuUsageRateByDay {
-    private String startDay;  //20230501
-    private String endDay; //20240430
+
+    @NotNull(message = "조회 시작 일이 입력되지 않았습니다.")
+    @PastOrPresent(message = "조회 시작 일이 조회 종료 일 보다 미래일 수 없습니다.")
+    private Timestamp startDay;
+
+    @NotNull(message = "조회 종료 일이 입력되지 않았습니다.")
+    @FutureOrPresent(message = "조회 종료 일이 조회 시작 일보다 과거일 수 없습니다.")
+    private Timestamp endDay;
 }

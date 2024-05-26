@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 @Log4j2
 @DisplayName("H2 연결 테스트")
 @DataJpaTest
@@ -23,13 +24,13 @@ public class h2ConnectTest {
     @Test
     public void testH2Connect1(){
         CpuUsageRateByMinute cpuUsageRateByMinute = new CpuUsageRateByMinute();
-        cpuUsageRateByMinute.setUsage(1.52);
+        cpuUsageRateByMinute.setUsageRate(1.52);
         cpuUsageRateByMinuteRepository.save(cpuUsageRateByMinute);
         Optional<CpuUsageRateByMinute> testEntity = cpuUsageRateByMinuteRepository.findById(cpuUsageRateByMinute.getCpuRateByMinuteSeq());
         testEntity.ifPresent(resultTest -> {
             log.debug("H2 Connect and Save test: {}", resultTest);
         });
-        assertThat(testEntity.get().getUsage()).isEqualTo(1.52);
+        assertThat(testEntity.get().getUsageRate()).isEqualTo(1.52);
 
     }
 

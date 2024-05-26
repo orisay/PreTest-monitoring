@@ -1,6 +1,18 @@
 package com.tera.pretest.context.cpumonitoring.dto.input;
 
+import lombok.*;
+
+import javax.validation.constraints.NotNull;
+import java.sql.Timestamp;
+
+@ToString
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class GetCpuUsageRateByHour {
-    private String startDay; //20240228
-    private String endDay; //20240527
+
+    @NotNull(message = "조회를 원하는 날짜가 입력되지 않았습니다.")
+    private Timestamp startDay;
 }
