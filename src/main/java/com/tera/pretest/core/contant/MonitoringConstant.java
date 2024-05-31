@@ -1,4 +1,4 @@
-package com.tera.pretest.core.monitoring.contant;
+package com.tera.pretest.core.contant;
 
 public final class MonitoringConstant {
 
@@ -13,6 +13,8 @@ public final class MonitoringConstant {
     public static final int MULTIPLICATION_FOR_MIXED_WORK = 2;
 
     public static final int PERCENTAGE = 100;
+
+    public static final int TEN_SECOND = 10;
 
     public static final int ONE_HOUR = 1;
 
@@ -32,9 +34,13 @@ public final class MonitoringConstant {
 
     public static final int RETRY_DELAY = 200;
 
+    public static final String TIME_ZONE = "Asia/Seoul";
+
     public static final String CPU_MONITORING_THREAD = "CpuMonitoringThread";
 
     public static final String DELETE_FLAG = "Y";
+
+    public static final long UPDATE_INTERVAL_TIME_MS = 6000;
 
 
 }

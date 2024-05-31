@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static com.tera.pretest.core.exception.CustomExceptionCode.NOT_FOUND_DATA;
-import static com.tera.pretest.core.monitoring.contant.MonitoringConstant.DELETE_FLAG;
+import static com.tera.pretest.core.contant.MonitoringConstant.DELETE_FLAG;
 
 @Log4j2
 @AllArgsConstructor

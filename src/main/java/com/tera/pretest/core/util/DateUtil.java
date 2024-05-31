@@ -1,5 +1,6 @@
 package com.tera.pretest.core.util;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
@@ -8,81 +9,94 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
-import static com.tera.pretest.core.monitoring.contant.MonitoringConstant.ONE_DAY;
-import static com.tera.pretest.core.monitoring.contant.MonitoringConstant.ONE_HOUR;
+import static com.tera.pretest.core.contant.MonitoringConstant.*;
 
+@AllArgsConstructor
 @Component
 public class DateUtil {
 
+    private final TimeProvider provider;
+
+
+    //현재 테스트 코드에서 사용중
     public Timestamp truncateTimestampToHour(Timestamp choiceDayAndHour) {
         ZonedDateTime hourTruncate = choiceDayAndHour.toInstant()
                 .truncatedTo(ChronoUnit.HOURS)
-                .atZone(ZoneId.systemDefault());
+                .atZone(ZoneId.of(TIME_ZONE));
+        return Timestamp.from(hourTruncate.toInstant());
+    }
+
+    //TEMP
+    public Timestamp truncateTimestampToHour(ZonedDateTime choiceDayAndHour) {
+        ZonedDateTime hourTruncate = choiceDayAndHour
+                .truncatedTo(ChronoUnit.HOURS);
         return Timestamp.from(hourTruncate.toInstant());
     }
 
     public Timestamp truncateTimestampToDay(Timestamp choiceDay) {
         ZonedDateTime hourTruncate = choiceDay.toInstant()
                 .truncatedTo(ChronoUnit.DAYS)
-                .atZone(ZoneId.systemDefault());
+                .atZone(ZoneId.of(TIME_ZONE));
+        return Timestamp.from(hourTruncate.toInstant());
+    }
+    //TEMP
+    public Timestamp truncateTimestampToDay(ZonedDateTime choiceDay) {
+        ZonedDateTime hourTruncate = choiceDay.truncatedTo(ChronoUnit.DAYS);
         return Timestamp.from(hourTruncate.toInstant());
     }
 
+
+
     public Timestamp addOneDay(Timestamp inputDay){
-        ZonedDateTime today = inputDay.toInstant().atZone(ZoneId.systemDefault());
+        ZonedDateTime today = inputDay.toInstant().atZone(ZoneId.of(TIME_ZONE));
         ZonedDateTime addOneDay = today.plusDays(ONE_DAY);
         return Timestamp.from(addOneDay.toInstant());
     }
 
     public Timestamp addOneHour(Timestamp inputDay){
-        ZonedDateTime startDay = inputDay.toInstant().atZone(ZoneId.systemDefault());
+        ZonedDateTime startDay = inputDay.toInstant().atZone(ZoneId.of(TIME_ZONE));
         ZonedDateTime addOneHour = startDay.plusHours(ONE_HOUR);
         return  Timestamp.from(addOneHour.toInstant());
     }
 
     public Timestamp addOneDayByInputDay(Timestamp inputDay){
-        ZonedDateTime day = inputDay.toInstant().atZone(ZoneId.systemDefault());
+        ZonedDateTime day = inputDay.toInstant().atZone(ZoneId.of(TIME_ZONE));
         ZonedDateTime addOneDay = day.plusDays(ONE_DAY);
         return  Timestamp.from(addOneDay.toInstant());
     }
 
 
     public boolean isSameDay(Timestamp inputDay){
-        LocalDate today = getTodayTruncatedToDay().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate choiceDay = inputDay.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        return today.equals(choiceDay);
+        ZonedDateTime today = getTodayTruncatedToDay();
+        return today.equals(inputDay);
     }
 
 
-    public Timestamp getTodayTruncatedToHour() {
-        return Timestamp.from(ZonedDateTime.now().truncatedTo(ChronoUnit.HOURS).toInstant());
+    public ZonedDateTime getTodayTruncatedToHour() {
+        return provider.getCurrentZonedDateTimeAt().truncatedTo(ChronoUnit.HOURS);
     }
 
-    public Timestamp getTodayTruncatedToDay() {
-        return Timestamp.from(ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS).toInstant());
+    public ZonedDateTime getTodayTruncatedToDay() {
+        return provider.getCurrentZonedDateTimeAt().truncatedTo(ChronoUnit.DAYS);
     }
 
-    public Timestamp getSearchHour(Integer hourToSubtract) {
-        ZonedDateTime todayTruncated = getTodayTruncatedToDay().toInstant().atZone(ZoneId.systemDefault());
-        ZonedDateTime searchDay = todayTruncated.minusHours(hourToSubtract);
-        return Timestamp.from(searchDay.toInstant());
+    public ZonedDateTime getSearchHour(Integer hourToSubtract) {
+        ZonedDateTime todayTruncated = getTodayTruncatedToDay().toInstant().atZone(ZoneId.of(TIME_ZONE));
+        return todayTruncated.minusHours(hourToSubtract);
     }
 
-    public Timestamp getSearchDay(Integer daysToSubtract) {
-        ZonedDateTime todayTruncated = getTodayTruncatedToDay().toInstant().atZone(ZoneId.systemDefault());
-        ZonedDateTime searchDay = todayTruncated.minusDays(daysToSubtract);
-        return Timestamp.from(searchDay.toInstant());
+    public ZonedDateTime getSearchDay(Integer daysToSubtract) {
+        ZonedDateTime todayTruncated = getTodayTruncatedToDay();
+        return todayTruncated.minusDays(daysToSubtract);
     }
 
-    public Timestamp getSearchMonth(Integer monthToSubtract) {
-        ZonedDateTime todayTruncated = getTodayTruncatedToDay().toInstant().atZone(ZoneId.systemDefault());
-        ZonedDateTime searchDay = todayTruncated.minusMonths(monthToSubtract);
-        return Timestamp.from(searchDay.toInstant());
+    public ZonedDateTime getSearchMonth(Integer monthToSubtract) {
+        ZonedDateTime todayTruncated = getTodayTruncatedToDay();
+        return todayTruncated.minusMonths(monthToSubtract);
     }
 
-    public Timestamp getSearchYear(Integer yearToSubtract) {
-        ZonedDateTime todayTruncated = getTodayTruncatedToDay().toInstant().atZone(ZoneId.systemDefault());
-        ZonedDateTime searchDay = todayTruncated.minusDays(yearToSubtract);
-        return Timestamp.from(searchDay.toInstant());
+    public ZonedDateTime getSearchYear(Integer yearToSubtract) {
+        ZonedDateTime todayTruncated = getTodayTruncatedToDay();
+        return todayTruncated.minusDays(yearToSubtract);
     }
 }

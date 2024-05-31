@@ -11,16 +11,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static com.tera.pretest.core.monitoring.contant.MonitoringConstant.*;
-import static com.tera.pretest.core.monitoring.contant.MonitoringScheduledConstant.*;
+import static com.tera.pretest.core.contant.MonitoringConstant.*;
+import static com.tera.pretest.core.contant.MonitoringScheduledConstant.*;
 
-//TODO 데이터 수집 실패 시 예외를 처리하고 로그를 남깁니다. -> AOP 작업
 @Log4j2
 @Component
 public class CpuMonitoring {
 
     private final CpuMonitoringManageService cpuMonitoringManageService;
+
     private final ScheduledExecutorService scheduledExecutorService;
+
     private final CpuMonitoringBackupService cpuMonitoringBackupService;
 
     public CpuMonitoring(CpuMonitoringManageService cpuMonitoringManageService,
@@ -80,5 +81,26 @@ public class CpuMonitoring {
         cpuMonitoringBackupService.hardDeleteOutdatedCpuUsageStatsByDay();
     }
 
+    public void shutdown() {
+        shutdownService();
+        try {
+            if (!awaitShutdown()) {
+                shutdownService();
+            }
+            if(!awaitShutdown())
+                log.error("scheduledExecutorService 종료하지 못했습니다.");
+        } catch (InterruptedException exception) {
+            shutdownService();
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void shutdownService() {
+        scheduledExecutorService.shutdown();
+    }
+
+    private boolean awaitShutdown() throws InterruptedException {
+        return scheduledExecutorService.awaitTermination(TEN_SECOND, TimeUnit.SECONDS);
+    }
 
 }

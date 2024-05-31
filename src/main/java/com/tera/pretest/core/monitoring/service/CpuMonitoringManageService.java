@@ -19,15 +19,15 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import oshi.hardware.CentralProcessor;
 
-import java.sql.Timestamp;
 import java.text.DecimalFormat;
+import java.time.ZonedDateTime;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.stream.DoubleStream;
 
 import static com.tera.pretest.core.exception.CustomExceptionCode.NOT_FOUND_DATA;
-import static com.tera.pretest.core.monitoring.contant.MonitoringConstant.*;
+import static com.tera.pretest.core.contant.MonitoringConstant.*;
 
 @Log4j2
 @AllArgsConstructor
@@ -62,7 +62,6 @@ public class CpuMonitoringManageService {
             Thread.sleep(TEN_SECOND_BY_MS);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            //TODO log aop update and only log?
             log.error("InterruptedException temp message");
         }
         Double averageCpuUsage = centralProcessor.getSystemCpuLoadBetweenTicks(startTicks) * PERCENTAGE;
@@ -89,8 +88,8 @@ public class CpuMonitoringManageService {
     }
 
     private List<CpuUsageRateByMinute> getMonitoringCpUsageByOneMinuteStats() {
-        Timestamp endTime = dateUtil.getTodayTruncatedToHour();
-        Timestamp startTime = dateUtil.getSearchHour(ONE_HOUR);
+        ZonedDateTime endTime = dateUtil.getTodayTruncatedToHour();
+        ZonedDateTime startTime = dateUtil.getSearchHour(ONE_HOUR);
         List<CpuUsageRateByMinute> cpuUsageAverageStats =
                 cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startTime, endTime);
         if (cpuUsageAverageStats.isEmpty())
@@ -115,8 +114,8 @@ public class CpuMonitoringManageService {
     }
 
     private List<CpuUsageRateByHour> getMonitoringCpUsageByOneHourStats() {
-        Timestamp endDay = dateUtil.getTodayTruncatedToDay();
-        Timestamp startDay = dateUtil.getSearchDay(ONE_DAY);
+        ZonedDateTime endDay = dateUtil.getTodayTruncatedToDay();
+        ZonedDateTime startDay = dateUtil.getSearchDay(ONE_DAY);
         List<CpuUsageRateByHour> cpuUsageStats = cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay);
         if (cpuUsageStats.isEmpty())
             throw new CustomException(NOT_FOUND_DATA);
@@ -128,7 +127,7 @@ public class CpuMonitoringManageService {
     @Retryable(value = {CustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Future<Void> softDeleteAndBackupCpuUsageStatsByMinute() {
-        Timestamp pastDay = dateUtil.getSearchDay(ONE_WEEK);
+        ZonedDateTime pastDay = dateUtil.getSearchDay(ONE_WEEK);
         cpuUsageRateByMinuteRepository.softDeleteOldData(pastDay);
         List<CpuUsageRateByMinute> oldData = cpuUsageRateByMinuteRepository.findByFlag(DELETE_FLAG);
         if(oldData.isEmpty())
@@ -141,7 +140,7 @@ public class CpuMonitoringManageService {
     @Retryable(value = {CustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Future<Void> softDeleteAndBackupOutdatedCpuUsageStatsByHour() {
-        Timestamp pastDay = dateUtil.getSearchMonth(THREE_MONTH);
+        ZonedDateTime pastDay = dateUtil.getSearchMonth(THREE_MONTH);
         cpuUsageRateByHourRepository.softDeleteOldData(pastDay);
         List<CpuUsageRateByHour> oldData = cpuUsageRateByHourRepository.findByFlag(DELETE_FLAG);
         if(oldData.isEmpty())
@@ -154,7 +153,7 @@ public class CpuMonitoringManageService {
     @Retryable(value = {CustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Future<Void> softDeleteAndBackupOutdatedCpuUsageStatsByDay() {
-        Timestamp pastDay = dateUtil.getSearchYear(ONE_YEAR);
+        ZonedDateTime pastDay = dateUtil.getSearchYear(ONE_YEAR);
         cpuUsageRateByDayRepository.softDeleteOldData(pastDay);
         List<CpuUsageRateByDay> oldData =cpuUsageRateByDayRepository.findByFlag(DELETE_FLAG);
         if(oldData.isEmpty())

@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.tera.pretest.core.exception.CustomExceptionCode.NOT_FOUND_DATA;
-import static com.tera.pretest.core.monitoring.contant.MonitoringConstant.DELETE_FLAG;
+import static com.tera.pretest.core.contant.MonitoringConstant.DELETE_FLAG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
