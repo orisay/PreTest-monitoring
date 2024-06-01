@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -27,12 +26,11 @@ public class DateUtil {
     }
 
     //TEMP
-    public Timestamp truncateTimestampToHour(ZonedDateTime choiceDayAndHour) {
-        ZonedDateTime hourTruncate = choiceDayAndHour
-                .truncatedTo(ChronoUnit.HOURS);
-        return Timestamp.from(hourTruncate.toInstant());
+    public ZonedDateTime truncateTimestampToHour(ZonedDateTime choiceDayAndHour) {
+        return choiceDayAndHour.truncatedTo(ChronoUnit.HOURS);
     }
 
+    // Test Code 변경시 바로 아래 함수로 이동
     public Timestamp truncateTimestampToDay(Timestamp choiceDay) {
         ZonedDateTime hourTruncate = choiceDay.toInstant()
                 .truncatedTo(ChronoUnit.DAYS)
@@ -40,33 +38,26 @@ public class DateUtil {
         return Timestamp.from(hourTruncate.toInstant());
     }
     //TEMP
-    public Timestamp truncateTimestampToDay(ZonedDateTime choiceDay) {
-        ZonedDateTime hourTruncate = choiceDay.truncatedTo(ChronoUnit.DAYS);
-        return Timestamp.from(hourTruncate.toInstant());
+    public ZonedDateTime truncateTimestampToDay(ZonedDateTime choiceDay) {
+        return choiceDay.truncatedTo(ChronoUnit.DAYS);
     }
 
 
 
-    public Timestamp addOneDay(Timestamp inputDay){
-        ZonedDateTime today = inputDay.toInstant().atZone(ZoneId.of(TIME_ZONE));
-        ZonedDateTime addOneDay = today.plusDays(ONE_DAY);
-        return Timestamp.from(addOneDay.toInstant());
+    public ZonedDateTime addOneDay(ZonedDateTime inputDay){
+        return inputDay.plusDays(ONE_DAY);
     }
 
-    public Timestamp addOneHour(Timestamp inputDay){
-        ZonedDateTime startDay = inputDay.toInstant().atZone(ZoneId.of(TIME_ZONE));
-        ZonedDateTime addOneHour = startDay.plusHours(ONE_HOUR);
-        return  Timestamp.from(addOneHour.toInstant());
+    public ZonedDateTime addOneHour(ZonedDateTime inputDay){
+        return  inputDay.plusHours(ONE_HOUR);
     }
 
-    public Timestamp addOneDayByInputDay(Timestamp inputDay){
-        ZonedDateTime day = inputDay.toInstant().atZone(ZoneId.of(TIME_ZONE));
-        ZonedDateTime addOneDay = day.plusDays(ONE_DAY);
-        return  Timestamp.from(addOneDay.toInstant());
+    public ZonedDateTime addOneDayByInputDay(ZonedDateTime inputDay){
+        return  inputDay.plusDays(ONE_DAY);
     }
 
 
-    public boolean isSameDay(Timestamp inputDay){
+    public boolean isSameDay(ZonedDateTime inputDay){
         ZonedDateTime today = getTodayTruncatedToDay();
         return today.equals(inputDay);
     }

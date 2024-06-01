@@ -3,7 +3,6 @@ package com.tera.pretest.context.cpumonitoring.dto.input;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
 @ToString

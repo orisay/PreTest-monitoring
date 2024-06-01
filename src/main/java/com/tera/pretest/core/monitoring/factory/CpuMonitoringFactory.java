@@ -14,7 +14,6 @@ public class CpuMonitoringFactory implements ThreadFactory {
         Thread cpuMonitoringThread = threadFactory.newThread(runnable);
         cpuMonitoringThread.setName(CPU_MONITORING_THREAD);
         cpuMonitoringThread.setDaemon(true);
-        //TODO Exception Handler aop or here
         return cpuMonitoringThread;
     }
 }

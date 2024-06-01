@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration status="INFO">
+    <!--Server TimeZone : "Asia/Seoul" DB TimeZone : "Asia/Seoul"-->
     <Appenders>
         <Console name="ConsoleAppender" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
@@ -7,15 +8,15 @@
         <RollingFile name="ExceptionLog" fileName="logs/Exception/Exception-logs.log" filePattern="logs/%d{yyyy-MM-dd}/currentTime-logs-%d{yyyy-MM-dd}.log">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
             <TimeBasedTriggeringPolicy />
+            <Filters>
+                <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"></ThresholdFilter>
+            </Filters>
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Logger name="com.tera.pretest.core.aop.aspect.ThrowExceptionAspect" level="error" additivity="false">
-            <AppenderRef ref="ConsoleAppender"/>
-            <AppenderRef ref="ExceptionLog"/>
-        </Logger>
         <Root level="info">
             <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="ExceptionLog"/>
         </Root>
     </Loggers>
 </Configuration>

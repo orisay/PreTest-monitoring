@@ -34,6 +34,8 @@ public final class MonitoringConstant {
 
     public static final int RETRY_DELAY = 200;
 
+    public static final int LIMIT_DATA_COUNT = 20;
+
     public static final String TIME_ZONE = "Asia/Seoul";
 
     public static final String CPU_MONITORING_THREAD = "CpuMonitoringThread";

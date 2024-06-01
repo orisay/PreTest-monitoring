@@ -1,4 +1,4 @@
-package com.tera.pretest.core.exception;
+package com.tera.pretest.core.exception.restful;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

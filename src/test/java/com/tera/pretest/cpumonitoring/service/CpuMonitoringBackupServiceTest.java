@@ -13,7 +13,7 @@ import com.tera.pretest.context.cpumonitoring.repository.backup.CpuUsageRateByMi
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
-import com.tera.pretest.core.exception.CustomException;
+import com.tera.pretest.core.exception.restful.CustomException;
 import com.tera.pretest.core.monitoring.service.CpuMonitoringBackupService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.DisplayName;
@@ -28,8 +28,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static com.tera.pretest.core.exception.CustomExceptionCode.NOT_FOUND_DATA;
 import static com.tera.pretest.core.contant.MonitoringConstant.DELETE_FLAG;
+import static com.tera.pretest.core.exception.restful.CustomExceptionCode.NOT_FOUND_DATA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;

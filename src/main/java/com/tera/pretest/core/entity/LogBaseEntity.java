@@ -1,7 +1,6 @@
 package com.tera.pretest.core.entity;
 
 import com.tera.pretest.core.config.ZoneDateTimeToStringConvert;
-import com.tera.pretest.core.config.ZoneDateTimeToTimestampConvert;
 import com.tera.pretest.core.util.TimeProvider;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
