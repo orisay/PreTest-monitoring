@@ -13,7 +13,7 @@ import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayR
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
 import com.tera.pretest.context.cpumonitoring.service.CpuMonitoringService;
-import com.tera.pretest.core.exception.CustomException;
+import com.tera.pretest.core.exception.restful.CustomException;
 import com.tera.pretest.core.util.DateUtil;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.DisplayName;

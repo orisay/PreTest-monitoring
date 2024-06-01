@@ -17,6 +17,7 @@ import javax.persistence.*;
 @Table(name = "TB_CPU_USAGE_RATE_BY_MINUTE")
 @Entity
 public class CpuUsageRateByMinute extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CPU_RATE_BY_MINUTE_SEQ", columnDefinition = "BIGINT")

@@ -6,7 +6,7 @@ import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
-import com.tera.pretest.core.exception.CustomException;
+import com.tera.pretest.core.exception.restful.CustomException;
 import com.tera.pretest.core.monitoring.service.CpuMonitoringBackupService;
 import com.tera.pretest.core.monitoring.service.CpuMonitoringManageService;
 import com.tera.pretest.core.util.DateUtil;
@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import static com.tera.pretest.core.monitoring.contant.MonitoringConstant.*;
+import static com.tera.pretest.core.contant.MonitoringConstant.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;

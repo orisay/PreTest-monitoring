@@ -12,7 +12,7 @@ import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByDay;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByHour;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
 import com.tera.pretest.context.cpumonitoring.service.CpuMonitoringService;
-import com.tera.pretest.core.exception.CustomException;
+import com.tera.pretest.core.exception.restful.CustomException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.sql.Timestamp;
 import java.util.Collections;
 
-import static com.tera.pretest.core.exception.CustomExceptionCode.NOT_FOUND_DATA;
+import static com.tera.pretest.core.exception.restful.CustomExceptionCode.NOT_FOUND_DATA;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
