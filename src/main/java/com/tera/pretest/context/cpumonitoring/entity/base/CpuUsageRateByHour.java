@@ -1,6 +1,6 @@
 package com.tera.pretest.context.cpumonitoring.entity.base;
 
-import com.tera.pretest.core.entity.BaseEntity;
+import com.tera.pretest.core.entity.LogBaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -16,7 +16,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Table(name = "TB_CPU_USAGE_RATE_BY_HOUR")
 @Entity
-public class CpuUsageRateByHour extends BaseEntity {
+public class CpuUsageRateByHour extends LogBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

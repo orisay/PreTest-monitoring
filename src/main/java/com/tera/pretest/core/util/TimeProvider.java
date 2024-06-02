@@ -15,15 +15,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.tera.pretest.core.contant.MonitoringConstant.*;
 
 @Log4j2
-@Component
 public class TimeProvider {
 
     private static TimeProvider timeProvider = new TimeProvider();
 
-    @Getter
     private final AtomicReference<ZonedDateTime> currentZonedDateTimeAt = new AtomicReference<>();
 
-    @Getter
     private AtomicReference<Timestamp> currentTimestampAt = new AtomicReference<>();
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();

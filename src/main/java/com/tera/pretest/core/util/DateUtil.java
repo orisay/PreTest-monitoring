@@ -3,7 +3,6 @@ package com.tera.pretest.core.util;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -17,28 +16,11 @@ public class DateUtil {
     private final TimeProvider provider;
 
 
-    //현재 테스트 코드에서 사용중
-    public Timestamp truncateTimestampToHour(Timestamp choiceDayAndHour) {
-        ZonedDateTime hourTruncate = choiceDayAndHour.toInstant()
-                .truncatedTo(ChronoUnit.HOURS)
-                .atZone(ZoneId.of(TIME_ZONE));
-        return Timestamp.from(hourTruncate.toInstant());
-    }
-
-    //TEMP
-    public ZonedDateTime truncateTimestampToHour(ZonedDateTime choiceDayAndHour) {
+    public ZonedDateTime truncateZonedDateTimeToHour(ZonedDateTime choiceDayAndHour) {
         return choiceDayAndHour.truncatedTo(ChronoUnit.HOURS);
     }
 
-    // Test Code 변경시 바로 아래 함수로 이동
-    public Timestamp truncateTimestampToDay(Timestamp choiceDay) {
-        ZonedDateTime hourTruncate = choiceDay.toInstant()
-                .truncatedTo(ChronoUnit.DAYS)
-                .atZone(ZoneId.of(TIME_ZONE));
-        return Timestamp.from(hourTruncate.toInstant());
-    }
-    //TEMP
-    public ZonedDateTime truncateTimestampToDay(ZonedDateTime choiceDay) {
+    public ZonedDateTime truncateZonedDateTimeToDay(ZonedDateTime choiceDay) {
         return choiceDay.truncatedTo(ChronoUnit.DAYS);
     }
 

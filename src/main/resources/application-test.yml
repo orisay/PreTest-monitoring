@@ -17,10 +17,12 @@ datasource:
         use_sql_comments: true
         generate_statistics: true
 
+app:
+  datetime-format: "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
 
 logging:
   level:
     root: INFO
-    org.hibernate.SQL: TRACE
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    com.tera.pretest: DEBUG
+    org.hibernate.SQL: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: INFO
+    com.tera.pretest: INFO

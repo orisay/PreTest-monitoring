@@ -37,12 +37,11 @@ public class CpuMonitoringService {
 
     private DateUtil dateUtil;
 
-    //TODO ZoneTime
 
     //truncateTimestampToHour
     @Transactional(readOnly = true)
     public ResultCpuUsageRateByMinute getCpuUsageRateByMinute(GetCpuUsageRateByMinute getCpuUsageRateByMinute) {
-        ZonedDateTime startDay = dateUtil.truncateTimestampToHour(getCpuUsageRateByMinute.getStartDay());
+        ZonedDateTime startDay = dateUtil.truncateZonedDateTimeToHour(getCpuUsageRateByMinute.getStartDay());
         ZonedDateTime endDay = dateUtil.addOneHour(startDay);
         List<CpuUsageRateByMinute> statsData = cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startDay, endDay);
         if(statsData.isEmpty())
@@ -53,7 +52,7 @@ public class CpuMonitoringService {
 
     @Transactional(readOnly = true)
     public ResultCpuUsageRateByHour getCpuUsageRateByHour(GetCpuUsageRateByHour getCpuUsageRateByHour) {
-        ZonedDateTime startDay = dateUtil.truncateTimestampToDay(getCpuUsageRateByHour.getStartDay());
+        ZonedDateTime startDay = dateUtil.truncateZonedDateTimeToDay(getCpuUsageRateByHour.getStartDay());
         ZonedDateTime endDay = dateUtil.addOneDayByInputDay(startDay);
         List<CpuUsageRateByHour> statsData = cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay);
         if(statsData.isEmpty())
@@ -63,8 +62,8 @@ public class CpuMonitoringService {
 
     @Transactional(readOnly = true)
     public ResultCpuUsageRateByDay getCpuUsageRateByDay(GetCpuUsageRateByDay getCpuUsageRateByDay) {
-        ZonedDateTime startDay = dateUtil.truncateTimestampToDay(getCpuUsageRateByDay.getStartDay());
-        ZonedDateTime endDay = dateUtil.truncateTimestampToDay(getCpuUsageRateByDay.getEndDay());
+        ZonedDateTime startDay = dateUtil.truncateZonedDateTimeToDay(getCpuUsageRateByDay.getStartDay());
+        ZonedDateTime endDay = dateUtil.truncateZonedDateTimeToDay(getCpuUsageRateByDay.getEndDay());
         ZonedDateTime exactEndDay = exactEndDayData(endDay);
         List<CpuUsageRateByDay> statsData = cpuUsageRateByDayRepository.findByCreateTimeBetween(startDay, exactEndDay);
         if(statsData.isEmpty())

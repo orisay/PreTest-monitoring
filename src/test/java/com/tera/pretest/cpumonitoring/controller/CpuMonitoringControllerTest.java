@@ -13,16 +13,21 @@ import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByHour;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
 import com.tera.pretest.context.cpumonitoring.service.CpuMonitoringService;
 import com.tera.pretest.core.exception.restful.CustomException;
+import com.tera.pretest.core.util.DateUtil;
+import com.tera.pretest.core.util.TimeProvider;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 
 import static com.tera.pretest.core.exception.restful.CustomExceptionCode.NOT_FOUND_DATA;
@@ -42,11 +47,29 @@ public class CpuMonitoringControllerTest {
     @Autowired
     protected ObjectMapper objectMapper;
 
+    @Autowired
+    protected DateUtil dateUtil;
+
+
+    @TestConfiguration
+    static class TestConfig{
+        @Bean(name="CpuMonitoringControllerDateUtilTest")
+        public DateUtil dateUtil(){
+            return new DateUtil(TimeProvider.getInstance());
+        }
+
+    }
+    @AfterAll
+    static void shutUp(){
+        TimeProvider.getInstance().shutdown();
+    }
+
     @Test
     @DisplayName("분 단위 CPU 사용률 조회 - 성공")
     void successGetCpuUsageRateByMinute() throws Exception {
+        ZonedDateTime insertDay = ZonedDateTime.now();
         GetCpuUsageRateByMinute requestDto = new GetCpuUsageRateByMinute();
-        requestDto.setStartDay(Timestamp.valueOf("2024-05-24 00:00:00"));
+        requestDto.setStartDay(dateUtil.truncateZonedDateTimeToDay(insertDay));
 
         CpuUsageRateByMinute usageRate = new CpuUsageRateByMinute(1L, 12.34);
         ResultCpuUsageRateByMinute responseDto = new ResultCpuUsageRateByMinute(Collections.singletonList(usageRate));
@@ -65,7 +88,8 @@ public class CpuMonitoringControllerTest {
     @DisplayName("분 단위 CPU 사용률 조회 - 데이터베이스 값 없음")
     void failGetCpuUsageRateByMinute_NotFound() throws Exception {
         GetCpuUsageRateByMinute requestDto = new GetCpuUsageRateByMinute();
-        requestDto.setStartDay(Timestamp.valueOf("2024-05-24 00:00:00"));
+        ZonedDateTime insertDay = ZonedDateTime.now();
+        requestDto.setStartDay(insertDay);
 
         when(cpuMonitoringService.getCpuUsageRateByMinute(any(GetCpuUsageRateByMinute.class)))
                 .thenThrow(new CustomException(NOT_FOUND_DATA));
@@ -82,7 +106,8 @@ public class CpuMonitoringControllerTest {
     @DisplayName("시 단위 CPU 사용률 조회 - 성공")
     void successGetCpuUsageRateByHour() throws Exception {
         GetCpuUsageRateByHour requestDto = new GetCpuUsageRateByHour();
-        requestDto.setStartDay(Timestamp.valueOf("2024-05-24 00:00:00"));
+        ZonedDateTime insertDay = ZonedDateTime.now();
+        requestDto.setStartDay(insertDay);
 
         CpuUsageRateByHour usageRate = new CpuUsageRateByHour(1L, 20.45, 30.67, 10.23);
         ResultCpuUsageRateByHour responseDto = new ResultCpuUsageRateByHour(Collections.singletonList(usageRate));
@@ -103,7 +128,8 @@ public class CpuMonitoringControllerTest {
     @DisplayName("시 단위 CPU 사용률 조회 - 데이터베이스 값 없음")
     void failGetCpuUsageRateByHour_NotFound() throws Exception {
         GetCpuUsageRateByHour requestDto = new GetCpuUsageRateByHour();
-        requestDto.setStartDay(Timestamp.valueOf("2024-05-24 00:00:00"));
+        ZonedDateTime insertDay = ZonedDateTime.now();
+        requestDto.setStartDay(insertDay);
 
         when(cpuMonitoringService.getCpuUsageRateByHour(any(GetCpuUsageRateByHour.class)))
                 .thenThrow(new CustomException(NOT_FOUND_DATA));
@@ -120,8 +146,10 @@ public class CpuMonitoringControllerTest {
     @DisplayName("일 단위 CPU 사용률 조회 - 성공")
     void successGetCpuUsageRateByDay() throws Exception {
         GetCpuUsageRateByDay requestDto = new GetCpuUsageRateByDay();
-        requestDto.setStartDay(Timestamp.valueOf("2024-05-01 00:00:00"));
-        requestDto.setEndDay(Timestamp.valueOf("2024-05-31 00:00:00"));
+        ZonedDateTime insertDay = ZonedDateTime.now();
+        ZonedDateTime insertDay2 = dateUtil.getSearchDay(10);
+        requestDto.setStartDay(insertDay);
+        requestDto.setEndDay(insertDay2);
 
         CpuUsageRateByDay usageRate = new CpuUsageRateByDay(1L, 25.67, 40.89, 15.34);
         ResultCpuUsageRateByDay responseDto = new ResultCpuUsageRateByDay(Collections.singletonList(usageRate));
@@ -142,8 +170,10 @@ public class CpuMonitoringControllerTest {
     @DisplayName("일 단위 CPU 사용률 조회 - 데이터베이스 값 없음")
     void failGetCpuUsageRateByDay_NotFound() throws Exception {
         GetCpuUsageRateByDay requestDto = new GetCpuUsageRateByDay();
-        requestDto.setStartDay(Timestamp.valueOf("2024-05-01 00:00:00"));
-        requestDto.setEndDay(Timestamp.valueOf("2024-05-31 00:00:00"));
+        ZonedDateTime insertDay = ZonedDateTime.now();
+        ZonedDateTime insertDay2 = dateUtil.getSearchDay(10);
+        requestDto.setStartDay(insertDay);
+        requestDto.setEndDay(insertDay2);
 
         when(cpuMonitoringService.getCpuUsageRateByDay(any(GetCpuUsageRateByDay.class)))
                 .thenThrow(new CustomException(NOT_FOUND_DATA));

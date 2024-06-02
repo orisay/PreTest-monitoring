@@ -10,6 +10,7 @@ import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 public class BuildFactory {
     private static final BuildFactory instance = new BuildFactory();
 
