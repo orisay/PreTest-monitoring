@@ -38,12 +38,12 @@ public class CpuMonitoringService {
     private DateUtil dateUtil;
 
 
-    //truncateTimestampToHour
     @Transactional(readOnly = true)
     public ResultCpuUsageRateByMinute getCpuUsageRateByMinute(GetCpuUsageRateByMinute getCpuUsageRateByMinute) {
-        ZonedDateTime startDay = dateUtil.truncateZonedDateTimeToHour(getCpuUsageRateByMinute.getStartDay());
-        ZonedDateTime endDay = dateUtil.addOneHour(startDay);
-        List<CpuUsageRateByMinute> statsData = cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startDay, endDay);
+        ZonedDateTime startTime = dateUtil.truncateZonedDateTimeToHour(getCpuUsageRateByMinute.getStartTime());
+        ZonedDateTime endTime = dateUtil.addOneHour(startTime);
+        log.info("Service method startTime: {} , endTime: {}", startTime, endTime);
+        List<CpuUsageRateByMinute> statsData = cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startTime, endTime);
         if(statsData.isEmpty())
             throw new CustomException(NOT_FOUND_DATA);
         return ResultCpuUsageRateByMinute.toBuild(statsData);

@@ -14,5 +14,5 @@ import java.time.ZonedDateTime;
 public class GetCpuUsageRateByMinute {
 
     @NotNull(message = "조회를 원하는 날과 시간이 입력되지 않았습니다.")
-    private ZonedDateTime startDay;
+    private ZonedDateTime startTime;
 }

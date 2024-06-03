@@ -69,7 +69,7 @@ public class CpuMonitoringControllerTest {
     void successGetCpuUsageRateByMinute() throws Exception {
         ZonedDateTime insertDay = ZonedDateTime.now();
         GetCpuUsageRateByMinute requestDto = new GetCpuUsageRateByMinute();
-        requestDto.setStartDay(dateUtil.truncateZonedDateTimeToDay(insertDay));
+        requestDto.setStartTime(dateUtil.truncateZonedDateTimeToDay(insertDay));
 
         CpuUsageRateByMinute usageRate = new CpuUsageRateByMinute(1L, 12.34);
         ResultCpuUsageRateByMinute responseDto = new ResultCpuUsageRateByMinute(Collections.singletonList(usageRate));
@@ -89,7 +89,7 @@ public class CpuMonitoringControllerTest {
     void failGetCpuUsageRateByMinute_NotFound() throws Exception {
         GetCpuUsageRateByMinute requestDto = new GetCpuUsageRateByMinute();
         ZonedDateTime insertDay = ZonedDateTime.now();
-        requestDto.setStartDay(insertDay);
+        requestDto.setStartTime(insertDay);
 
         when(cpuMonitoringService.getCpuUsageRateByMinute(any(GetCpuUsageRateByMinute.class)))
                 .thenThrow(new CustomException(NOT_FOUND_DATA));
