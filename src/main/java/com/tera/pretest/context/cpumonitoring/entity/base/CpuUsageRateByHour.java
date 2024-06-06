@@ -18,6 +18,8 @@ import javax.persistence.*;
 @Entity
 public class CpuUsageRateByHour extends LogBaseEntity {
 
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CPU_RATE_BY_HOUR_SEQ", columnDefinition = "BIGINT")
@@ -36,12 +38,4 @@ public class CpuUsageRateByHour extends LogBaseEntity {
     @Column(name = "MINIMUM_USAGE")
     private Double minimumUsage;
 
-    public static CpuUsageRateByHour toBuild(double average, double minimumUsage, double maximumUsage) {
-        return CpuUsageRateByHour.builder()
-                .average(average)
-                .maximumUsage(maximumUsage)
-                .minimumUsage(minimumUsage)
-                .build();
-
-    }
 }

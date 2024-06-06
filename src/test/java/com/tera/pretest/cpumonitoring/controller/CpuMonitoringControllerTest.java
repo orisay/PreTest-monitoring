@@ -1,6 +1,7 @@
 package com.tera.pretest.cpumonitoring.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tera.pretest.config.UnitTestConfig;
 import com.tera.pretest.context.cpumonitoring.controller.CpuMonitoringController;
 import com.tera.pretest.context.cpumonitoring.dto.input.GetCpuUsageRateByDay;
 import com.tera.pretest.context.cpumonitoring.dto.input.GetCpuUsageRateByHour;
@@ -13,17 +14,22 @@ import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByHour;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
 import com.tera.pretest.context.cpumonitoring.service.CpuMonitoringService;
 import com.tera.pretest.core.exception.restful.CustomException;
+import com.tera.pretest.core.manager.ShutdownManager;
 import com.tera.pretest.core.util.DateUtil;
 import com.tera.pretest.core.util.TimeProvider;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -36,9 +42,11 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ContextConfiguration(classes = UnitTestConfig.class)
+@ExtendWith(MockitoExtension.class)
 @WebMvcTest(CpuMonitoringController.class)
 public class CpuMonitoringControllerTest {
-    @MockBean
+    @Autowired
     protected CpuMonitoringService cpuMonitoringService;
 
     @Autowired
@@ -51,17 +59,14 @@ public class CpuMonitoringControllerTest {
     protected DateUtil dateUtil;
 
 
-    @TestConfiguration
-    static class TestConfig{
-        @Bean(name="CpuMonitoringControllerDateUtilTest")
-        public DateUtil dateUtil(){
-            return new DateUtil(TimeProvider.getInstance());
-        }
+    @Autowired
+    protected ShutdownManager shutdownManager;
 
-    }
-    @AfterAll
-    static void shutUp(){
-        TimeProvider.getInstance().shutdown();
+
+
+    @AfterEach
+    public void shutUp(){
+        shutdownManager.shutdown();
     }
 
     @Test

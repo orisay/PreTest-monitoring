@@ -16,6 +16,7 @@ import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinu
 import com.tera.pretest.context.cpumonitoring.service.CpuMonitoringService;
 import com.tera.pretest.core.config.ZonedDateTimeFormatConfig;
 import com.tera.pretest.core.exception.restful.CustomException;
+import com.tera.pretest.core.manager.ShutdownManager;
 import com.tera.pretest.core.util.DateUtil;
 import com.tera.pretest.core.util.TimeProvider;
 import lombok.extern.log4j.Log4j2;
@@ -27,6 +28,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,24 +46,29 @@ import static org.springframework.test.util.AssertionErrors.assertFalse;
 @DisplayName("CpuMonitoringService Test")
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
-@Import({ZonedDateTimeFormatConfig.class, UnitTestConfig.class, CpuMonitoringService.class})
+@ContextConfiguration(classes = UnitTestConfig.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Import({ZonedDateTimeFormatConfig.class, CpuMonitoringService.class})
 public class CpuMonitoringServiceTest {
     @Mock
-    protected DateUtil dateUtil;
+    private DateUtil dateUtil;
 
     @Mock
-    protected CpuUsageRateByMinuteRepository cpuUsageRateByMinuteRepository;
+    private CpuUsageRateByMinuteRepository cpuUsageRateByMinuteRepository;
 
     @Mock
-    protected CpuUsageRateByHourRepository cpuUsageRateByHourRepository;
+    private CpuUsageRateByHourRepository cpuUsageRateByHourRepository;
 
     @Mock
-    protected CpuUsageRateByDayRepository cpuUsageRateByDayRepository;
+    private CpuUsageRateByDayRepository cpuUsageRateByDayRepository;
 
     @InjectMocks
-    protected CpuMonitoringService cpuMonitoringService;
+    private CpuMonitoringService cpuMonitoringService;
 
-    protected DateTimeFormatter formatter;
+    @Mock
+    private ShutdownManager shutdownManager;
+
+    private DateTimeFormatter formatter;
 
     @BeforeEach
     public void setup() {
@@ -69,8 +76,8 @@ public class CpuMonitoringServiceTest {
     }
 
     @AfterAll
-    static void shutUp() {
-        TimeProvider.getInstance().shutdown();
+    public void shutUp() {
+        shutdownManager.shutdown();
     }
 
     @Nested

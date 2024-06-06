@@ -1,12 +1,14 @@
 package com.tera.pretest.core.util;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -15,9 +17,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.tera.pretest.core.contant.MonitoringConstant.*;
 
 @Log4j2
+@Component
 public class TimeProvider {
 
-    private static TimeProvider timeProvider = new TimeProvider();
+//    private static TimeProvider timeProvider = new TimeProvider();
 
     private final AtomicReference<ZonedDateTime> currentZonedDateTimeAt = new AtomicReference<>();
 
@@ -26,22 +29,33 @@ public class TimeProvider {
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
 
-    private TimeProvider() {
-        scheduledExecutorService.scheduleAtFixedRate(this::updateTime, 0, UPDATE_INTERVAL_TIME_MS, TimeUnit.MICROSECONDS);
+    public TimeProvider() {
+        log.info("TimeProvider start Log");
+//        updateTime();
+        log.info("TimeProvider second Log");
+//        getInstance();
+        log.info("TimeProvider third Log");
+        scheduledExecutorService.scheduleAtFixedRate(this::updateTime, 0, UPDATE_INTERVAL_TIME, TimeUnit.MINUTES);
     }
 
-    public static TimeProvider getInstance() {
-        return timeProvider;
-    }
+//    public static TimeProvider getInstance() {
+//        log.info("생성 이후 getInstance");
+//        return timeProvider;
+//    }
+
+
 
     public void updateTime() {
         ZonedDateTime nowZoneDateTime = ZonedDateTime.now(ZoneId.of(TIME_ZONE));
         Timestamp nowTimestamp = Timestamp.from(nowZoneDateTime.toInstant());
         currentZonedDateTimeAt.set(nowZoneDateTime);
         currentTimestampAt.set(nowTimestamp);
+        log.info("TimeProvider updateTime first Log nowZoneDateTime:{}", nowZoneDateTime);
     }
 
     public ZonedDateTime getCurrentZonedDateTimeAt() {
+        log.info("Test currentZonedDateTimeAt Start");
+        log.info("Test currentZonedDateTimeAt.get():{}", currentZonedDateTimeAt.get());
         return currentZonedDateTimeAt.get();
     }
 

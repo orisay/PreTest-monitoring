@@ -3,9 +3,11 @@ package com.tera.pretest.core.monitoring.service;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByDay;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByHour;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
+import com.tera.pretest.context.cpumonitoring.factory.BuildFactory;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
+import com.tera.pretest.core.config.FormatterConfig;
 import com.tera.pretest.core.exception.process.ProcessCustomException;
 import com.tera.pretest.core.manager.MinuteStatDataBufferManager;
 import com.tera.pretest.core.util.DateUtil;
@@ -48,13 +50,15 @@ public class CpuMonitoringManageService {
 
     private final MinuteStatDataBufferManager minuteStatDataBufferManager;
 
-    private DateUtil dateUtil;
+    private final BuildFactory buildFactory;
 
+    private final FormatterConfig formatterConfig;
+
+    private DateUtil dateUtil;
 
     public void saveMonitoringCpuUsage() {
         Double averageCpuUsage = getAverageCpuUsageByOneMinute();
-        Double decimalFormatCpuUsage = changeDecimalFormatCpuUsage(averageCpuUsage);
-        CpuUsageRateByMinute insertData = CpuUsageRateByMinute.toBuild(decimalFormatCpuUsage);
+        CpuUsageRateByMinute insertData = buildFactory.getInstance().toBuildByCpuUsageRateByMinute(averageCpuUsage);
         minuteStatDataBufferManager.collectCpuUsageRateByMinuteData(insertData);
     }
 
@@ -72,35 +76,37 @@ public class CpuMonitoringManageService {
             log.error(" InterruptedException 발생",  exception);
         }
         Double averageCpuUsage = centralProcessor.getSystemCpuLoadBetweenTicks(startTicks) * PERCENTAGE;
-        return changeDecimalFormatCpuUsage(averageCpuUsage);
+        return formatterConfig.changeDecimalFormatCpuUsage(averageCpuUsage);
     }
 
 
-    private Double changeDecimalFormatCpuUsage(Double cpuUsage) {
-        DecimalFormat roundUsage = new DecimalFormat("0.00");
-        return Double.parseDouble(roundUsage.format(cpuUsage));
-    }
 
     @Async("daemonThreadForAsync")
     @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Future<Void> saveAverageCpuUsageByHour() {
+        log.info("saveAverageCpuUsageByHour()TestCode와 중복호출 Start ");
         List<CpuUsageRateByMinute> cpuAverageStats = getMonitoringCpUsageByOneMinuteStats();
         DoubleSummaryStatistics stats = cpuAverageStats.stream().mapToDouble(CpuUsageRateByMinute::getUsageRate).summaryStatistics();
-        double averageUsage = changeDecimalFormatCpuUsage(stats.getAverage());
-        double minimumUsage = changeDecimalFormatCpuUsage(stats.getMin());
-        double maximumUsage = changeDecimalFormatCpuUsage(stats.getMax());
-        cpuUsageRateByHourRepository.save(CpuUsageRateByHour.toBuild(averageUsage, minimumUsage, maximumUsage));
+        double averageUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.getAverage());
+        double minimumUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.getMin());
+        double maximumUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.getMax());
+        log.info("saveAverageCpuUsageByHour()TestCode와 save 이전 중복호출");
+        cpuUsageRateByHourRepository.save(buildFactory.getInstance().toBuildByCpuUsageRateByHour(averageUsage, minimumUsage, maximumUsage));
+        log.info("saveAverageCpuUsageByHour()TestCode와 save 이후 중복호출");
         return AsyncResult.forValue(null);
     }
 
     private List<CpuUsageRateByMinute> getMonitoringCpUsageByOneMinuteStats() {
-        ZonedDateTime endTime = dateUtil.getTodayTruncatedToHour();
-        ZonedDateTime startTime = dateUtil.getSearchHour(ONE_HOUR);
+        ZonedDateTime endDay = dateUtil.getTodayTruncatedToDay(); // 2024-06-03T00:00:00
+        ZonedDateTime startDay = dateUtil.daysAgo(ONE_DAY); // 2024-06-23T00:00:00
+        log.info("getMonitoringCpUsageByOneMinuteStats()TestCode와 중복호출 Start ");
         List<CpuUsageRateByMinute> cpuUsageAverageStats =
-                cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startTime, endTime);
-        if (cpuUsageAverageStats.isEmpty())
+                cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startDay, endDay);
+        if (cpuUsageAverageStats.isEmpty()){
+            log.info("getMonitoringCpUsageByOneMinuteStats() 조건문 Start ");
             throw new ProcessCustomException(NOT_FOUND_DATA);
+        }
         return cpuUsageAverageStats;
     }
 
@@ -109,13 +115,13 @@ public class CpuMonitoringManageService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Future<Void> saveAverageCpuUsageByDay() {
         List<CpuUsageRateByHour> stats = getMonitoringCpUsageByOneHourStats();
-        double averageUsage = changeDecimalFormatCpuUsage(stats.stream().mapToDouble(CpuUsageRateByHour::getAverage)
+        double averageUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.stream().mapToDouble(CpuUsageRateByHour::getAverage)
                 .summaryStatistics().getAverage());
-        double minimumUsage = changeDecimalFormatCpuUsage(stats.stream().mapToDouble(CpuUsageRateByHour::getMinimumUsage)
+        double minimumUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.stream().mapToDouble(CpuUsageRateByHour::getMinimumUsage)
                 .min().orElseThrow(() -> new ProcessCustomException(NOT_FOUND_DATA)));
-        double maximumUsage = changeDecimalFormatCpuUsage(stats.stream().mapToDouble(CpuUsageRateByHour::getMaximumUsage)
+        double maximumUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.stream().mapToDouble(CpuUsageRateByHour::getMaximumUsage)
                 .max().orElseThrow(() -> new ProcessCustomException(NOT_FOUND_DATA)));
-        cpuUsageRateByDayRepository.save(CpuUsageRateByDay.toBuild(averageUsage, minimumUsage, maximumUsage));
+        cpuUsageRateByDayRepository.save(buildFactory.getInstance().toBuildByCpuUsageRateByDay(averageUsage, minimumUsage, maximumUsage));
         return AsyncResult.forValue(null);
 
     }

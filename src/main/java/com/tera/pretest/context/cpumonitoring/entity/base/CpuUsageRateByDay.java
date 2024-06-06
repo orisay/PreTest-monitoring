@@ -35,11 +35,5 @@ public class CpuUsageRateByDay extends LogBaseEntity {
     @Column(name = "MINIMUM_USAGE")
     private Double minimumUsage;
 
-    public static CpuUsageRateByDay toBuild(double average, double minimumUsage, double maximumUsage) {
-        return CpuUsageRateByDay.builder()
-                .average(average)
-                .minimumUsage(minimumUsage)
-                .maximumUsage(maximumUsage)
-                .build();
-    }
+
 }

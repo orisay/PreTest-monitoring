@@ -82,7 +82,12 @@ dependencies {
 	//testcode
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-	testImplementation 'org.mockito:mockito-core:3.6.0'
+	testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.11.0'
+
+	testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.1.1'
+	implementation group: 'net.bytebuddy', name: 'byte-buddy', version: '1.14.17'
+	testImplementation group: 'net.bytebuddy', name: 'byte-buddy-agent', version: '1.14.17'
+
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'com.h2database:h2'

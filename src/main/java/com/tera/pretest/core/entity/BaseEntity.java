@@ -1,5 +1,6 @@
 package com.tera.pretest.core.entity;
 
+import com.tera.pretest.core.config.TimeProviderListener;
 import com.tera.pretest.core.util.TimeProvider;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -15,7 +16,7 @@ import java.sql.Timestamp;
 @SuperBuilder
 @NoArgsConstructor
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners(TimeProviderListener.class)
 public class BaseEntity {
 
     @Schema(description = "Soft Delete Backup Flag")
@@ -35,7 +36,7 @@ public class BaseEntity {
         if (this.flag == null)
             flag = "N";
         if(this.createTime == null)
-            createTime= TimeProvider.getInstance().getCurrentTimestampAt();
+            createTime= TimeProviderListener.getCurrentTimeStamp();
     }
 
 }

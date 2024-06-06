@@ -10,11 +10,6 @@ import javax.annotation.PostConstruct;
 import java.time.format.DateTimeFormatter;
 
 
-/*
- * Bean 초기화 및 주입 순서가 매우 중요.
- *
- * */
-
 @Log4j2
 @NoArgsConstructor
 @Configuration
@@ -28,10 +23,10 @@ public class ZonedDateTimeFormatConfig {
 
     @PostConstruct
     public void initZoneDateTimeFormatter(){
-        log.info("1st work initZoneDateTimeFormatter before dateTimeFormatter:{}",dateTimeFormatter);
-        log.info("2nd work initZoneDateTimeFormatter before need dateTimeFormatter:{}",zonedDateTimeFormat);
+        log.info("init 1st work initZoneDateTimeFormatter before dateTimeFormatter:{}",dateTimeFormatter);
+        log.info("init 2nd work initZoneDateTimeFormatter before need dateTimeFormatter:{}",zonedDateTimeFormat);
         dateTimeFormatter = DateTimeFormatter.ofPattern(zonedDateTimeFormat);
-        log.info("3th work initZoneDateTimeFormatter after dateTimeFormatter:{}",dateTimeFormatter);
+        log.info("init 3th work initZoneDateTimeFormatter after dateTimeFormatter:{}",dateTimeFormatter);
     }
 
     @Bean

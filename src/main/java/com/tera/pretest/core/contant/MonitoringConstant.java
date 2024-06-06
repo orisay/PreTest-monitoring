@@ -42,7 +42,7 @@ public final class MonitoringConstant {
 
     public static final String DELETE_FLAG = "Y";
 
-    public static final long UPDATE_INTERVAL_TIME_MS = 6000;
+    public static final long UPDATE_INTERVAL_TIME = 1;
 
 
 }

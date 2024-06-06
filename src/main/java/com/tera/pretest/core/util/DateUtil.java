@@ -1,25 +1,43 @@
 package com.tera.pretest.core.util;
 
+import com.tera.pretest.core.config.ZonedDateTimeFormatConfig;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.text.DecimalFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 import static com.tera.pretest.core.contant.MonitoringConstant.*;
 
 @Log4j2
-@AllArgsConstructor
 @Component
 public class DateUtil {
 
-    private final TimeProvider provider;
+    public static TimeProvider provider;
+
+
+
+//    public DateUtil(TimeProvider provider) {
+//        log.info("1st DateUtil DI Test provider:{}", provider);
+//        this.provider = provider.getInstance();
+//    }
+
+    @Autowired
+    public DateUtil(TimeProvider provider) {
+        log.info("1st DateUtil DI Test provider:{}", provider);
+        this.provider = provider;
+    }
 
 
     public ZonedDateTime truncateZonedDateTimeToHour(ZonedDateTime choiceDayAndHour) {
-        log.info("DateUtil choiceDayAndHour : {}",choiceDayAndHour);
+        log.info("DateUtil choiceDayAndHour : {}", choiceDayAndHour);
         return choiceDayAndHour.truncatedTo(ChronoUnit.HOURS);
     }
 
@@ -28,21 +46,20 @@ public class DateUtil {
     }
 
 
-
-    public ZonedDateTime addOneDay(ZonedDateTime inputDay){
+    public ZonedDateTime addOneDay(ZonedDateTime inputDay) {
         return inputDay.plusDays(ONE_DAY);
     }
 
-    public ZonedDateTime addOneHour(ZonedDateTime inputDay){
-        return  inputDay.plusHours(ONE_HOUR);
+    public ZonedDateTime addOneHour(ZonedDateTime inputDay) {
+        return inputDay.plusHours(ONE_HOUR);
     }
 
-    public ZonedDateTime addOneDayByInputDay(ZonedDateTime inputDay){
-        return  inputDay.plusDays(ONE_DAY);
+    public ZonedDateTime addOneDayByInputDay(ZonedDateTime inputDay) {
+        return inputDay.plusDays(ONE_DAY);
     }
 
 
-    public boolean isSameDay(ZonedDateTime inputDay){
+    public boolean isSameDay(ZonedDateTime inputDay) {
         ZonedDateTime today = getTodayTruncatedToDay();
         return today.equals(inputDay);
     }
@@ -53,17 +70,26 @@ public class DateUtil {
     }
 
     public ZonedDateTime getTodayTruncatedToDay() {
-        return provider.getCurrentZonedDateTimeAt().truncatedTo(ChronoUnit.DAYS);
+        log.info("4th calling getTodayTruncatedToDay");
+        ZonedDateTime testValue = provider.getCurrentZonedDateTimeAt().truncatedTo(ChronoUnit.DAYS);
+        log.info("5th calling getTodayTruncatedToDay value:{}", testValue);
+//        return provider.getCurrentZonedDateTimeAt().truncatedTo(ChronoUnit.DAYS);
+        return testValue;
     }
 
-    public ZonedDateTime getSearchHour(Integer hourToSubtract) {
-        ZonedDateTime todayTruncated = getTodayTruncatedToDay().toInstant().atZone(ZoneId.of(TIME_ZONE));
-        return todayTruncated.minusHours(hourToSubtract);
+
+    public ZonedDateTime daysAgo(Integer hourToSubtract) {
+        log.info("calling getTodayTruncatedToDay");
+        return provider.getCurrentZonedDateTimeAt().minusDays(hourToSubtract);
     }
 
     public ZonedDateTime getSearchDay(Integer daysToSubtract) {
         ZonedDateTime todayTruncated = getTodayTruncatedToDay();
-        return todayTruncated.minusDays(daysToSubtract);
+        log.info("calling getTodayTruncatedToDay value:{}", todayTruncated);
+        ZonedDateTime testValue = todayTruncated.minusDays(daysToSubtract);
+        log.info("calling getTodayTruncatedToDay value:{}", testValue);
+        return testValue;
+//        return todayTruncated.minusDays(daysToSubtract);
     }
 
     public ZonedDateTime getSearchMonth(Integer monthToSubtract) {
@@ -75,4 +101,6 @@ public class DateUtil {
         ZonedDateTime todayTruncated = getTodayTruncatedToDay();
         return todayTruncated.minusDays(yearToSubtract);
     }
+
+
 }

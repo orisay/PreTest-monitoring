@@ -1,5 +1,6 @@
 package com.tera.pretest.core.entity;
 
+import com.tera.pretest.core.config.TimeProviderListener;
 import com.tera.pretest.core.config.ZonedDateTimeToStringConvert;
 import com.tera.pretest.core.util.TimeProvider;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,7 +20,7 @@ import java.time.ZonedDateTime;
 @SuperBuilder
 @NoArgsConstructor
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners(TimeProviderListener.class)
 public class LogBaseEntity extends BaseEntity{
 
     @Convert(converter = ZonedDateTimeToStringConvert.class)
@@ -31,7 +32,7 @@ public class LogBaseEntity extends BaseEntity{
     private void insertLogData(){
         super.insertBaseData();
         if(this.timeZoneAt == null)
-            this.timeZoneAt = TimeProvider.getInstance().getCurrentZonedDateTimeAt();
+            this.timeZoneAt = TimeProviderListener.getCurrentZonedDateTime();
 
     }
 
