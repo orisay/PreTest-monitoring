@@ -22,13 +22,6 @@ public class DateUtil {
 
     public static TimeProvider provider;
 
-
-
-//    public DateUtil(TimeProvider provider) {
-//        log.info("1st DateUtil DI Test provider:{}", provider);
-//        this.provider = provider.getInstance();
-//    }
-
     @Autowired
     public DateUtil(TimeProvider provider) {
         log.info("1st DateUtil DI Test provider:{}", provider);
@@ -85,11 +78,8 @@ public class DateUtil {
 
     public ZonedDateTime getSearchDay(Integer daysToSubtract) {
         ZonedDateTime todayTruncated = getTodayTruncatedToDay();
-        log.info("calling getTodayTruncatedToDay value:{}", todayTruncated);
-        ZonedDateTime testValue = todayTruncated.minusDays(daysToSubtract);
-        log.info("calling getTodayTruncatedToDay value:{}", testValue);
-        return testValue;
-//        return todayTruncated.minusDays(daysToSubtract);
+        ZonedDateTime yesterday = todayTruncated.minusDays(daysToSubtract);
+        return yesterday;
     }
 
     public ZonedDateTime getSearchMonth(Integer monthToSubtract) {

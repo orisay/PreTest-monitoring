@@ -20,7 +20,6 @@ import static com.tera.pretest.core.contant.MonitoringConstant.*;
 @Component
 public class TimeProvider {
 
-//    private static TimeProvider timeProvider = new TimeProvider();
 
     private final AtomicReference<ZonedDateTime> currentZonedDateTimeAt = new AtomicReference<>();
 
@@ -31,17 +30,12 @@ public class TimeProvider {
 
     public TimeProvider() {
         log.info("TimeProvider start Log");
-//        updateTime();
         log.info("TimeProvider second Log");
-//        getInstance();
         log.info("TimeProvider third Log");
         scheduledExecutorService.scheduleAtFixedRate(this::updateTime, 0, UPDATE_INTERVAL_TIME, TimeUnit.MINUTES);
     }
 
-//    public static TimeProvider getInstance() {
-//        log.info("생성 이후 getInstance");
-//        return timeProvider;
-//    }
+
 
 
 

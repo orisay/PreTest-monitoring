@@ -85,26 +85,21 @@ public class CpuMonitoringManageService {
     @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Future<Void> saveAverageCpuUsageByHour() {
-        log.info("saveAverageCpuUsageByHour()TestCode와 중복호출 Start ");
         List<CpuUsageRateByMinute> cpuAverageStats = getMonitoringCpUsageByOneMinuteStats();
         DoubleSummaryStatistics stats = cpuAverageStats.stream().mapToDouble(CpuUsageRateByMinute::getUsageRate).summaryStatistics();
         double averageUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.getAverage());
         double minimumUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.getMin());
         double maximumUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.getMax());
-        log.info("saveAverageCpuUsageByHour()TestCode와 save 이전 중복호출");
         cpuUsageRateByHourRepository.save(buildFactory.getInstance().toBuildByCpuUsageRateByHour(averageUsage, minimumUsage, maximumUsage));
-        log.info("saveAverageCpuUsageByHour()TestCode와 save 이후 중복호출");
         return AsyncResult.forValue(null);
     }
 
     private List<CpuUsageRateByMinute> getMonitoringCpUsageByOneMinuteStats() {
-        ZonedDateTime endDay = dateUtil.getTodayTruncatedToDay(); // 2024-06-03T00:00:00
-        ZonedDateTime startDay = dateUtil.daysAgo(ONE_DAY); // 2024-06-23T00:00:00
-        log.info("getMonitoringCpUsageByOneMinuteStats()TestCode와 중복호출 Start ");
+        ZonedDateTime endDay = dateUtil.getTodayTruncatedToDay();
+        ZonedDateTime startDay = dateUtil.daysAgo(ONE_DAY);
         List<CpuUsageRateByMinute> cpuUsageAverageStats =
                 cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startDay, endDay);
         if (cpuUsageAverageStats.isEmpty()){
-            log.info("getMonitoringCpUsageByOneMinuteStats() 조건문 Start ");
             throw new ProcessCustomException(NOT_FOUND_DATA);
         }
         return cpuUsageAverageStats;
@@ -121,9 +116,9 @@ public class CpuMonitoringManageService {
                 .min().orElseThrow(() -> new ProcessCustomException(NOT_FOUND_DATA)));
         double maximumUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.stream().mapToDouble(CpuUsageRateByHour::getMaximumUsage)
                 .max().orElseThrow(() -> new ProcessCustomException(NOT_FOUND_DATA)));
+        log.info("BaseCode averageUsage:{},  minimumUsage:{}, maximumUsage:{}",averageUsage,minimumUsage, maximumUsage );
         cpuUsageRateByDayRepository.save(buildFactory.getInstance().toBuildByCpuUsageRateByDay(averageUsage, minimumUsage, maximumUsage));
         return AsyncResult.forValue(null);
-
     }
 
     private List<CpuUsageRateByHour> getMonitoringCpUsageByOneHourStats() {

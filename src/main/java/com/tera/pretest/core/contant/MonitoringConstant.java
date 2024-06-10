@@ -26,7 +26,7 @@ public final class MonitoringConstant {
 
     public static final int ONE_YEAR = 1;
 
-    public static final int THREE_MONTH = 1;
+    public static final int THREE_MONTH = 3;
 
     public static final int ONE_WEEK = 7;
 

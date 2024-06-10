@@ -22,7 +22,7 @@ app:
 
 logging:
   level:
-    root: INFO
-    org.hibernate.SQL: INFO
-    org.hibernate.type.descriptor.sql.BasicBinder: INFO
-    com.tera.pretest: INFO
+    root: TRACE
+    org.hibernate.SQL: TRACE
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.tera.pretest: TRACE

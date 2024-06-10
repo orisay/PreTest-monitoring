@@ -24,7 +24,10 @@ public class ShutdownManager implements ApplicationListener<ContextClosedEvent> 
 
     @PreDestroy
     public void shutdown() {
-        timeProvider.shutdown();
-        cpuMonitoring.shutdown();
+        if (timeProvider != null)
+            timeProvider.shutdown();
+
+        if (cpuMonitoring != null)
+            cpuMonitoring.shutdown();
     }
 }
