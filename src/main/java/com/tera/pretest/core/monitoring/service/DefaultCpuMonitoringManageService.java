@@ -10,7 +10,8 @@ import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinu
 import com.tera.pretest.core.config.FormatterConfig;
 import com.tera.pretest.core.exception.process.ProcessCustomException;
 import com.tera.pretest.core.manager.MinuteStatDataBufferManager;
-import com.tera.pretest.core.util.DateUtil;
+import com.tera.pretest.core.monitoring.service.interfaces.CpuMonitoringManageService;
+import com.tera.pretest.core.util.ProviderDateUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.retry.annotation.Backoff;
@@ -22,7 +23,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import oshi.hardware.CentralProcessor;
 
-import java.text.DecimalFormat;
 import java.time.ZonedDateTime;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
@@ -36,7 +36,7 @@ import static com.tera.pretest.core.exception.process.ProcessCustomExceptionCode
 @Log4j2
 @AllArgsConstructor
 @Service
-public class CpuMonitoringManageService {
+public class DefaultCpuMonitoringManageService implements CpuMonitoringManageService {
 
     private final CentralProcessor centralProcessor;
 
@@ -54,12 +54,18 @@ public class CpuMonitoringManageService {
 
     private final FormatterConfig formatterConfig;
 
-    private DateUtil dateUtil;
+    private ProviderDateUtil dateUtil;
 
+    @Override
     public void saveMonitoringCpuUsage() {
         Double averageCpuUsage = getAverageCpuUsageByOneMinute();
-        CpuUsageRateByMinute insertData = buildFactory.getInstance().toBuildByCpuUsageRateByMinute(averageCpuUsage);
+        CpuUsageRateByMinute insertData = buildFactory.toBuildByCpuUsageRateByMinute(averageCpuUsage);
         minuteStatDataBufferManager.collectCpuUsageRateByMinuteData(insertData);
+    }
+
+    @Override
+    public void threadSleep(long second) throws InterruptedException {
+        TimeUnit.SECONDS.sleep(second);
     }
 
     private Double getAverageCpuUsageByOneMinute() {
@@ -70,28 +76,24 @@ public class CpuMonitoringManageService {
     private Double getServerTotalCpuUsageByTenSecond() {
         long[] startTicks = centralProcessor.getSystemCpuLoadTicks();
         try {
-            TimeUnit.SECONDS.sleep(TEN_SECOND);
+            threadSleep(TEN_SECOND);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            log.error(" InterruptedException 발생",  exception);
+            log.error(" InterruptedException 발생", exception);
         }
         Double averageCpuUsage = centralProcessor.getSystemCpuLoadBetweenTicks(startTicks) * PERCENTAGE;
         return formatterConfig.changeDecimalFormatCpuUsage(averageCpuUsage);
     }
 
-
-
-    @Async("daemonThreadForAsync")
-    @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Future<Void> saveAverageCpuUsageByHour() {
+    @Override
+    public void saveAverageCpuUsageByHour() {
         List<CpuUsageRateByMinute> cpuAverageStats = getMonitoringCpUsageByOneMinuteStats();
         DoubleSummaryStatistics stats = cpuAverageStats.stream().mapToDouble(CpuUsageRateByMinute::getUsageRate).summaryStatistics();
         double averageUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.getAverage());
         double minimumUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.getMin());
         double maximumUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.getMax());
-        cpuUsageRateByHourRepository.save(buildFactory.getInstance().toBuildByCpuUsageRateByHour(averageUsage, minimumUsage, maximumUsage));
-        return AsyncResult.forValue(null);
+        CpuUsageRateByHour cpuUsageStat = buildFactory.toBuildByCpuUsageRateByHour(averageUsage, minimumUsage, maximumUsage);
+        saveOneHourCpuUsageStatsToDb(cpuUsageStat);
     }
 
     private List<CpuUsageRateByMinute> getMonitoringCpUsageByOneMinuteStats() {
@@ -99,7 +101,7 @@ public class CpuMonitoringManageService {
         ZonedDateTime startDay = dateUtil.daysAgo(ONE_DAY);
         List<CpuUsageRateByMinute> cpuUsageAverageStats =
                 cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startDay, endDay);
-        if (cpuUsageAverageStats.isEmpty()){
+        if (cpuUsageAverageStats.isEmpty()) {
             throw new ProcessCustomException(NOT_FOUND_DATA);
         }
         return cpuUsageAverageStats;
@@ -108,7 +110,14 @@ public class CpuMonitoringManageService {
     @Async("daemonThreadForAsync")
     @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Future<Void> saveAverageCpuUsageByDay() {
+    @Override
+    public Future<Void> saveOneHourCpuUsageStatsToDb(CpuUsageRateByHour CpuUsageStat) {
+        cpuUsageRateByHourRepository.save(CpuUsageStat);
+        return AsyncResult.forValue(null);
+    }
+
+    @Override
+    public void saveAverageCpuUsageByDay() {
         List<CpuUsageRateByHour> stats = getMonitoringCpUsageByOneHourStats();
         double averageUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.stream().mapToDouble(CpuUsageRateByHour::getAverage)
                 .summaryStatistics().getAverage());
@@ -116,9 +125,9 @@ public class CpuMonitoringManageService {
                 .min().orElseThrow(() -> new ProcessCustomException(NOT_FOUND_DATA)));
         double maximumUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.stream().mapToDouble(CpuUsageRateByHour::getMaximumUsage)
                 .max().orElseThrow(() -> new ProcessCustomException(NOT_FOUND_DATA)));
-        log.info("BaseCode averageUsage:{},  minimumUsage:{}, maximumUsage:{}",averageUsage,minimumUsage, maximumUsage );
-        cpuUsageRateByDayRepository.save(buildFactory.getInstance().toBuildByCpuUsageRateByDay(averageUsage, minimumUsage, maximumUsage));
-        return AsyncResult.forValue(null);
+        CpuUsageRateByDay cpuUsageStat = buildFactory.toBuildByCpuUsageRateByDay(averageUsage, minimumUsage, maximumUsage);
+        saveOneDayCpuUsageStatsToDb(cpuUsageStat);
+
     }
 
     private List<CpuUsageRateByHour> getMonitoringCpUsageByOneHourStats() {
@@ -130,7 +139,15 @@ public class CpuMonitoringManageService {
         return cpuUsageStats;
     }
 
-    //아래부터는 softDelete 작업
+    @Async("daemonThreadForAsync")
+    @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public Future<Void> saveOneDayCpuUsageStatsToDb(CpuUsageRateByDay cpuUsageStat) {
+        cpuUsageRateByDayRepository.save(cpuUsageStat);
+        return AsyncResult.forValue(null);
+    }
+
     @Async
     @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -168,6 +185,11 @@ public class CpuMonitoringManageService {
             throw new ProcessCustomException(NOT_FOUND_DATA);
         cpuMonitoringBackupService.backupCpuUsageStatsByDay(oldData);
         return AsyncResult.forValue(null);
+    }
+
+    @Override
+    public Future<Void> saveOneMinuteCpuUsageToDb() {
+        throw new UnsupportedOperationException("이 구현체에서 사용되지 않습니다..");
     }
 
 }

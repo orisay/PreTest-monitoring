@@ -1,7 +1,5 @@
 package com.tera.pretest.cpumonitoring.service;
 
-import com.tera.pretest.config.AsyncTestConfig;
-import com.tera.pretest.config.UnitTestConfig;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByDay;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByHour;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
@@ -9,37 +7,29 @@ import com.tera.pretest.context.cpumonitoring.factory.BuildFactory;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
-import com.tera.pretest.context.cpumonitoring.service.CpuMonitoringService;
 import com.tera.pretest.core.config.FormatterConfig;
 import com.tera.pretest.core.config.ZonedDateTimeFormatConfig;
 import com.tera.pretest.core.exception.process.ProcessCustomException;
-import com.tera.pretest.core.exception.process.ProcessCustomExceptionCode;
 import com.tera.pretest.core.manager.MinuteStatDataBufferManager;
 import com.tera.pretest.core.manager.ShutdownManager;
-import com.tera.pretest.core.monitoring.CpuMonitoring;
 import com.tera.pretest.core.monitoring.service.CpuMonitoringBackupService;
-import com.tera.pretest.core.monitoring.service.CpuMonitoringManageService;
-import com.tera.pretest.core.util.DateUtil;
+import com.tera.pretest.core.monitoring.service.DefaultCpuMonitoringManageService;
+
+import com.tera.pretest.core.util.ProviderDateUtil;
 import com.tera.pretest.core.util.TimeProvider;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import oshi.hardware.CentralProcessor;
 
 import java.text.DecimalFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static com.tera.pretest.core.contant.MonitoringConstant.*;
@@ -51,11 +41,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @Log4j2
-@DisplayName("CpuMonitoringManageService Test")
+@DisplayName("DefaultCpuMonitoringManageService Test")
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
-@Import({ZonedDateTimeFormatConfig.class, CpuMonitoringManageService.class})
-public class CpuMonitoringManageServiceTest {
+@Import({ZonedDateTimeFormatConfig.class, DefaultCpuMonitoringManageService.class})
+public class DefaultCpuMonitoringManageServiceTest {
 
     @Mock
     private CentralProcessor centralProcessor;
@@ -76,7 +66,7 @@ public class CpuMonitoringManageServiceTest {
     private MinuteStatDataBufferManager minuteStatDataBufferManager;
 
     @Mock
-    private DateUtil dateUtil;
+    private ProviderDateUtil dateUtil;
 
     @Mock
     private TimeProvider timeProvider;
@@ -90,40 +80,13 @@ public class CpuMonitoringManageServiceTest {
     @Mock
     private BuildFactory buildFactory;
 
-
+    @Spy
     @InjectMocks
-    private CpuMonitoringManageService cpuMonitoringManageService;
+    private DefaultCpuMonitoringManageService cpuMonitoringManageService;
 
     private MockedStatic<BuildFactory> buildFactoryMockedStatic;
 
     private DateTimeFormatter formatter;
-
-    @Test
-    public void testDateUtilInjection() {
-        assertNotNull(dateUtil, "DateUtil should not be null");
-    }
-
-    @Test
-    public void testTimeProviderInjection() {
-        assertNotNull(timeProvider, "TimeProvider should not be null");
-    }
-
-
-    @Test
-    public void testShutdownManagerInjection() {
-        assertNotNull(shutdownManager, "ShutdownManager should not be null");
-    }
-
-    @Test
-    public void testBuildFactoryInjection() {
-        assertNotNull(buildFactory, "BuildFactory should not be null");
-    }
-
-    @Test
-    public void testFormatterConfigInjection() {
-        assertNotNull(formatterConfig, "FormatterConfig should not be null");
-    }
-
 
     @BeforeEach
     public void setup() {
@@ -136,9 +99,8 @@ public class CpuMonitoringManageServiceTest {
 
     @AfterEach
     public void shutUp() {
-        log.info("Calling buildFactoryMockedStatic shutUp");
+        log.info("Calling shutUp");
         buildFactoryMockedStatic.close();
-        log.info("Calling shutdownManager shutUp");
         shutdownManager.shutdown();
 
     }
@@ -150,56 +112,53 @@ public class CpuMonitoringManageServiceTest {
     }
 
 
-//        @Nested
-//    @DisplayName("분 단위 CPU 사용량 저장")
-//    class SaveMonitoringCpuUsageTests {
-//
-//        @BeforeEach
-//        void SaveMonitoringCpuUsageTestSetup(){
-//            minuteStatDataBufferManager = new MinuteStatDataBufferManager(cpuUsageRateByMinuteRepository);
-//        }
-//        @Test
-//        @DisplayName("분 단위 CPU 사용량 저장 성공")
-//        void successSaveMonitoringCpuUsageTest() throws Exception {
-//            long[] startTicks = {1L, 2L, 3L, 4L};
-//            Double averageCpuUsage = 2.5;
-//            Double cpuUsageStat = averageCpuUsage * PERCENTAGE;
-//            DecimalFormat roundUsage = new DecimalFormat("0.00");
-//            Double cpuUsageResult = Double.parseDouble(roundUsage.format(cpuUsageStat));
-//
-//            //1번 작업
-//            when(centralProcessor.getSystemCpuLoadTicks()).thenReturn(startTicks);
-//            //2번
-//            when(centralProcessor.getSystemCpuLoadBetweenTicks(eq(startTicks))).thenReturn(averageCpuUsage * PERCENTAGE);
-//            //3번
-//            CpuUsageRateByMinute mockData = new CpuUsageRateByMinute();
-//            mockData.setUsageRate(cpuUsageResult);
-//            //4번
-//            cpuMonitoringManageService.saveMonitoringCpuUsage();
-//
-////            when(cpuUsageRateByMinuteRepository.save(captor.capture())).thenReturn(new CpuUsageRateByMinute());
-//
-//
-//            verify(minuteStatDataBufferManager, times(1)).collectCpuUsageRateByMinuteData(mockData);
-//            verifyNoMoreInteractions(minuteStatDataBufferManager);
-//
-//        }
-//
-//        @Test
-//        @DisplayName("분 단위 CPU 사용량 저장 실패-비동기 반복 횟수 전부 소진")
-//        void failSaveMonitoringCpuUsageTest() throws Exception {
-//            when(centralProcessor.getSystemCpuLoadTicks()).thenReturn(new long[]{1, 2, 3, 4});
-//            when(centralProcessor.getSystemCpuLoadBetweenTicks(any(long[].class))).thenThrow(new RuntimeException("Test Exception"));
-//            assertThrows(RuntimeException.class, () -> {
-//                Future<Void> result = cpuMonitoringManageService.saveMonitoringCpuUsage();
-//                result.get();
-//            });
-//            verify(cpuUsageRateByMinuteRepository, never()).save(any(CpuUsageRateByMinute.class));
-//        }
-//    }
+    @Nested
+    @DisplayName("분 단위 CPU 사용량 저장")
+    class SaveMonitoringCpuUsageTests {
+
+        /*
+        getAverageCpuUsageByOneMinute 통해
+        10초마다 1분간 데이터를 수집해서 통계를 내기에 호출은 6번 됩니다.
+        */
+        @Test
+        @DisplayName("분 단위 CPU 사용량 저장 - Tick 계산")
+        void SuccessGetTickData() throws InterruptedException {
+            long[] startTicks = {1L, 2L, 3L, 4L};
+            double averageCpuUsage = 2.5;
+            double averageCpuUsagePercentage = averageCpuUsage * PERCENTAGE;
+            CpuUsageRateByMinute insertData = new CpuUsageRateByMinute();
+
+            doNothing().when(cpuMonitoringManageService).threadSleep(TEN_SECOND);
+            when(centralProcessor.getSystemCpuLoadTicks()).thenReturn(startTicks);
+            when(centralProcessor.getSystemCpuLoadBetweenTicks(startTicks)).thenReturn(averageCpuUsage);
+            when(formatterConfig.changeDecimalFormatCpuUsage(any(Double.class))).thenReturn(averageCpuUsagePercentage);
+            when(buildFactory.toBuildByCpuUsageRateByMinute(any(Double.class))).thenReturn(insertData);
+            cpuMonitoringManageService.saveMonitoringCpuUsage();
+
+            verify(cpuMonitoringManageService, times(ONE_MINUTE_COUNT_BY_SEC)).threadSleep(TEN_SECOND);
+            verify(centralProcessor, times(ONE_MINUTE_COUNT_BY_SEC)).getSystemCpuLoadTicks();
+            verify(centralProcessor, times(ONE_MINUTE_COUNT_BY_SEC)).getSystemCpuLoadBetweenTicks(startTicks);
+            verify(formatterConfig, times(ONE_MINUTE_COUNT_BY_SEC)).changeDecimalFormatCpuUsage(anyDouble());
+            verify(minuteStatDataBufferManager).collectCpuUsageRateByMinuteData(insertData);
+
+        }
+
+
+        @Test
+        @DisplayName("분 단위 CPU 사용량 저장 실패 - InterruptedException 발생 ")
+        void successCollectCpuUsageRateByMinuteData() throws Exception {
+            doThrow(new InterruptedException()).when(cpuMonitoringManageService).threadSleep(TEN_SECOND);
+            InterruptedException exception = assertThrows(InterruptedException.class, () -> {
+                cpuMonitoringManageService.threadSleep(TEN_SECOND);
+            });
+
+            assertEquals(InterruptedException.class, exception.getClass(), "예외가 일치하지 않습니다.");
+
+        }
+    }
 
     @Nested
-    @DisplayName("시 단위 CPU 사용량 저장")
+    @DisplayName("시 단위 CPU 사용량 정보 수집")
     class SaveAverageCpuUsageByHourTests {
 
         private ZonedDateTime startDay;
@@ -208,7 +167,7 @@ public class CpuMonitoringManageServiceTest {
 
         @BeforeEach
         void setupDateData() {
-            log.info("SaveAverageCpuUsageByHourTests @BeforeEachStart");
+            log.info("Calling setupDateData");
             startDay = parseZonedDateTime("2024-05-23T01:00:00.000+09:00");
             endDay = parseZonedDateTime("2024-05-23T02:00:00.000+09:00");
             when(dateUtil.getTodayTruncatedToDay()).thenReturn(endDay);
@@ -218,6 +177,7 @@ public class CpuMonitoringManageServiceTest {
         }
 
         private List<CpuUsageRateByMinute> commonCondition() {
+            log.info("Calling commonCondition");
             CpuUsageRateByMinute firstTestData = createCpuUsageRateByMinute(10.0);
             CpuUsageRateByMinute secondTestData = createCpuUsageRateByMinute(20.0);
             List<CpuUsageRateByMinute> minuteStats = Arrays.asList(firstTestData, secondTestData);
@@ -227,6 +187,7 @@ public class CpuMonitoringManageServiceTest {
         }
 
         private void commonVerify() {
+            log.info("Calling commonVerify");
             verify(dateUtil).getTodayTruncatedToDay();
             verify(dateUtil).daysAgo(ONE_DAY);
             verify(cpuUsageRateByMinuteRepository).findByCreateTimeBetween(startDay, endDay);
@@ -240,30 +201,20 @@ public class CpuMonitoringManageServiceTest {
         }
 
         @Test
-        @DisplayName("시 단위 CPU 사용량 저장 성공 -save")
-        void successSaveAverageCpuUsageByHour() throws Exception {
+        @DisplayName("시 단위 CPU 사용량 통계 수집 - 성공")
+        void successCollectingAverageCpuUsageByMinuteStat() throws Exception {
             List<CpuUsageRateByMinute> minuteStats = commonCondition();
             DoubleSummaryStatistics stats = getDoubleSummaryStatistics(minuteStats);
             double averageUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.getAverage());
             double minimumUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.getMin());
             double maximumUsage = formatterConfig.changeDecimalFormatCpuUsage(stats.getMax());
-            log.info("Test findByCreateTimeBetween Result:{}", minuteStats);
-            log.info("Test getAverage:{}", averageUsage);
-            log.info("Test minimumUsage:{}", minimumUsage);
-            log.info("Test maximumUsage:{}", maximumUsage);
+
             CpuUsageRateByHour minuteStatsSteamResult = new CpuUsageRateByHour(null, averageUsage, minimumUsage, maximumUsage);
             when(buildFactory.toBuildByCpuUsageRateByHour(eq(averageUsage), eq(minimumUsage), eq(maximumUsage)))
                     .thenReturn(minuteStatsSteamResult);
-            ArgumentCaptor<CpuUsageRateByHour> captor = ArgumentCaptor.forClass(CpuUsageRateByHour.class);
-            when(cpuUsageRateByHourRepository.save(captor.capture())).thenReturn(minuteStatsSteamResult);
-            log.info("resultDb Test:{}", minuteStatsSteamResult);
-
-            Future<Void> result = cpuMonitoringManageService.saveAverageCpuUsageByHour();
-            result.get();
-
+            cpuMonitoringManageService.saveAverageCpuUsageByHour();
             commonVerify();
             verify(buildFactory).toBuildByCpuUsageRateByHour(averageUsage, minimumUsage, maximumUsage);
-            verify(cpuUsageRateByHourRepository).save(minuteStatsSteamResult);
 
         }
 
@@ -275,9 +226,8 @@ public class CpuMonitoringManageServiceTest {
 
         }
 
-
         @Test
-        @DisplayName("시 단위 CPU 사용량 - Between result isEmpty")
+        @DisplayName("시 단위 CPU 사용량 통계 수집 - Between result isEmpty")
         void betweenMethodResultIsEmpty() throws Exception {
             when(cpuUsageRateByMinuteRepository.findByCreateTimeBetween
                     (startDay, endDay)).thenReturn(Collections.emptyList());
@@ -286,28 +236,7 @@ public class CpuMonitoringManageServiceTest {
                 cpuMonitoringManageService.saveAverageCpuUsageByHour();
             });
 
-            log.info("NOT_FOUND_DATE.getMessage():{}", NOT_FOUND_DATA.getMessage());
-            log.info("exception.getMessage()):{}", exception.getMessage());
             commonVerify();
-            assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage());
-
-        }
-
-        @Test
-        @DisplayName("시 단위 CPU 사용량 - save fail")
-        void failJpaSaveTest() throws Exception {
-            commonCondition();
-            ArgumentCaptor<CpuUsageRateByHour> captor = ArgumentCaptor.forClass(CpuUsageRateByHour.class);
-            when(cpuUsageRateByHourRepository.save(captor.capture()))
-                    .thenThrow(new ProcessCustomException(NOT_FOUND_DATA));
-
-            ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
-                cpuMonitoringManageService.saveAverageCpuUsageByHour();
-            });
-
-            verify(cpuUsageRateByHourRepository).save(captor.capture());
-            commonVerify();
-            verify(cpuUsageRateByHourRepository).save(captor.capture());
             assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage());
 
         }
@@ -315,7 +244,39 @@ public class CpuMonitoringManageServiceTest {
     }
 
     @Nested
-    @DisplayName("일 단위 CPU 사용량 저장")
+    @DisplayName("시 단위 CPU 사용량 정보 저장")
+    class saveOneHourCpuUsageStatsToDbTests {
+        @Test
+        @DisplayName("시 단위 CPU 사용량 통계 저장 - 성공")
+        void successSaveAverageCpuUsageByHourStat() throws Exception {
+            CpuUsageRateByHour cpuUsageStat = new CpuUsageRateByHour();
+            when(cpuUsageRateByHourRepository.save(cpuUsageStat)).thenReturn(cpuUsageStat);
+
+            cpuMonitoringManageService.saveOneHourCpuUsageStatsToDb(cpuUsageStat);
+
+            verify(cpuUsageRateByHourRepository).save(cpuUsageStat);
+
+        }
+
+        @Test
+        @DisplayName("시 단위 CPU 사용량 저장 - 실패")
+        void failSaveAverageCpuUsageByHourStat() throws Exception {
+            CpuUsageRateByHour cpuUsageStat = new CpuUsageRateByHour();
+            when(cpuUsageRateByHourRepository.save(any(CpuUsageRateByHour.class))).thenThrow(new ProcessCustomException(NOT_FOUND_DATA));
+
+            ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
+                cpuMonitoringManageService.saveOneHourCpuUsageStatsToDb(cpuUsageStat);
+            });
+
+            verify(cpuUsageRateByHourRepository).save(cpuUsageStat);
+            assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), "예외가 일치하지 않습니다.");
+
+        }
+
+    }
+
+    @Nested
+    @DisplayName("일 단위 CPU 사용량 통계 수집")
     class SaveAverageCpuUsageByDayTests {
 
         private ZonedDateTime startDay;
@@ -324,7 +285,7 @@ public class CpuMonitoringManageServiceTest {
 
         @BeforeEach
         private void setupDateData() {
-            log.info("SaveAverageCpuUsageByDayTests @BeforeEachStart");
+            log.info("Calling setupDateData");
             startDay = parseZonedDateTime("2024-05-23T01:00:00.000+09:00");
             endDay = parseZonedDateTime("2024-05-23T02:00:00.000+09:00");
             when(dateUtil.getTodayTruncatedToDay()).thenReturn(endDay);
@@ -333,35 +294,25 @@ public class CpuMonitoringManageServiceTest {
         }
 
 
-
-
         @Test
-        @DisplayName("일 단위 CPU 사용량 저장 성공")
-        void successSaveAverageCpuUsageByDayTest() throws Exception {
-            //준비
+        @DisplayName("일 단위 CPU 사용량 통계 수집 - 성공")
+        void successCollectingAverageCpuUsageByMinuteStat() throws Exception {
             List<CpuUsageRateByHour> cpuUsageStats = commonCondition();
             double resultAverage = formatterConfig.changeDecimalFormatCpuUsage(cpuUsageStats.stream().mapToDouble(CpuUsageRateByHour::getAverage).summaryStatistics().getAverage());
             double resultMin = formatterConfig.changeDecimalFormatCpuUsage(cpuUsageStats.stream().mapToDouble(CpuUsageRateByHour::getMinimumUsage).summaryStatistics().getMin());
             double resultMax = formatterConfig.changeDecimalFormatCpuUsage(cpuUsageStats.stream().mapToDouble(CpuUsageRateByHour::getMaximumUsage).summaryStatistics().getMax());
-            log.info("resultAverageValue : {}", resultAverage);
-            log.info("resultResultMinValue :{}", resultMin);
-            log.info("resultResultMaxValue :{}", resultMax);
             CpuUsageRateByDay resultStat = new CpuUsageRateByDay(null, resultAverage, resultMax, resultMin);
-            log.info("resultStatValue: {}", resultStat);
-            when(buildFactory.toBuildByCpuUsageRateByDay(resultAverage, resultMin, resultMax)).thenReturn(resultStat);
-            ArgumentCaptor<CpuUsageRateByDay> captor = ArgumentCaptor.forClass(CpuUsageRateByDay.class);
-            when(cpuUsageRateByDayRepository.save(captor.capture())).thenReturn(new CpuUsageRateByDay());
 
-            Future<Void> result = cpuMonitoringManageService.saveAverageCpuUsageByDay();
-            result.get();
+            when(buildFactory.toBuildByCpuUsageRateByDay(resultAverage, resultMin, resultMax)).thenReturn(resultStat);
+            cpuMonitoringManageService.saveAverageCpuUsageByDay();
 
             commonVerify();
             verify(buildFactory).toBuildByCpuUsageRateByDay(resultAverage, resultMin, resultMax);
-            verify(cpuUsageRateByDayRepository).save(any(CpuUsageRateByDay.class));
 
         }
 
         private List<CpuUsageRateByHour> commonCondition() {
+            log.info("Calling commonCondition");
             CpuUsageRateByHour firstTestData = toBuildByCpuUsageRateByHour(50.00, 20.00, 70.00);
             CpuUsageRateByHour secondTestData = toBuildByCpuUsageRateByHour(30.00, 10.00, 60.00);
             List<CpuUsageRateByHour> cpuUsageStats = Arrays.asList(firstTestData, secondTestData);
@@ -371,6 +322,7 @@ public class CpuMonitoringManageServiceTest {
         }
 
         private void commonVerify() {
+            log.info("Calling commonVerify");
             verify(dateUtil).getTodayTruncatedToDay();
             verify(dateUtil).getSearchDay(ONE_DAY);
             verify(cpuUsageRateByHourRepository).findByCreateTimeBetween(startDay, endDay);
@@ -378,6 +330,7 @@ public class CpuMonitoringManageServiceTest {
         }
 
         private CpuUsageRateByHour toBuildByCpuUsageRateByHour(Double average, Double min, Double max) {
+            log.info("Calling toBuildByCpuUsageRateByHour average:{}, min:{}, max:{}", average, min, max);
             CpuUsageRateByHour dataForSearch = new CpuUsageRateByHour();
             dataForSearch.setMinimumUsage(formatterConfig.changeDecimalFormatCpuUsage(min));
             dataForSearch.setMaximumUsage(formatterConfig.changeDecimalFormatCpuUsage(max));
@@ -386,7 +339,7 @@ public class CpuMonitoringManageServiceTest {
         }
 
         @Test
-        @DisplayName("일 단위 CPU 사용량 저장 - Between result isEmpty")
+        @DisplayName("일 단위 CPU 사용량 통계 수집 - Between isEmpty")
         void betweenMethodResultIsEmpty() throws Exception {
             when(cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay)).thenReturn(Collections.emptyList());
 
@@ -396,24 +349,41 @@ public class CpuMonitoringManageServiceTest {
 
             commonVerify();
             assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), "예외가 일치하지않습니다.");
+
+        }
+
+    }
+
+    @Nested
+    @DisplayName("일 단위 CPU 사용량 정보 저장")
+    class saveOneDayCpuUsageStatsToDbTests {
+
+        @Test
+        @DisplayName("일 단위 CPU 사용량 정보 저장 - 성공")
+        void successSaveAverageCpuUsageByDayStat() {
+            CpuUsageRateByDay cpuUsageStat = new CpuUsageRateByDay();
+            when(cpuUsageRateByDayRepository.save(any(CpuUsageRateByDay.class))).thenReturn(cpuUsageStat);
+
+            cpuMonitoringManageService.saveOneDayCpuUsageStatsToDb(cpuUsageStat);
+
+            verify(cpuUsageRateByDayRepository).save(cpuUsageStat);
+
         }
 
         @Test
-        @DisplayName("일 단위 CPU 사용량 저장 - save fail")
-        void failJpaSaveTest() {
-            commonCondition();
-            ArgumentCaptor<CpuUsageRateByDay> captor = ArgumentCaptor.forClass(CpuUsageRateByDay.class);
-            when(cpuUsageRateByDayRepository.save(captor.capture())).thenThrow(new ProcessCustomException(NOT_FOUND_DATA));
-
+        @DisplayName("일 단위 CPU 사용량 정보 저장 - 실패")
+        void failSaveAverageCpuUsageByDayStat() {
+            CpuUsageRateByDay cpuUsageStat = new CpuUsageRateByDay();
+            when(cpuUsageRateByDayRepository.save(cpuUsageStat)).thenThrow(new ProcessCustomException(NOT_FOUND_DATA));
             ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
-                cpuMonitoringManageService.saveAverageCpuUsageByDay().get();
+                cpuMonitoringManageService.saveOneDayCpuUsageStatsToDb(cpuUsageStat);
             });
 
-            commonVerify();
-            verify(cpuUsageRateByDayRepository).save(captor.capture());
-            assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), "예외가 일치하지않습니다.");
+            verify(cpuUsageRateByDayRepository).save(cpuUsageStat);
+            assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), "예외가 일치하지 않습니다.");
 
         }
+
 
     }
 
@@ -425,6 +395,7 @@ public class CpuMonitoringManageServiceTest {
 
         @BeforeEach
         void setupDateData() {
+            log.info("Calling setupDateData");
             pastDay = parseZonedDateTime("2024-06-01T01:00:00.000+09:00");
             when(dateUtil.getSearchDay(ONE_WEEK)).thenReturn(pastDay);
             when(cpuUsageRateByMinuteRepository.softDeleteOldData(pastDay)).thenReturn(2L);
@@ -432,6 +403,7 @@ public class CpuMonitoringManageServiceTest {
         }
 
         void verifyTotalBasicVerify() {
+            log.info("Calling verifyTotalBasicVerify");
             verify(dateUtil).getSearchDay(ONE_WEEK);
             verify(cpuUsageRateByMinuteRepository).softDeleteOldData(pastDay);
             verify(cpuUsageRateByMinuteRepository).findByFlag(DELETE_FLAG);
@@ -463,7 +435,7 @@ public class CpuMonitoringManageServiceTest {
 
             verifyTotalBasicVerify();
             verify(cpuMonitoringBackupService, never()).backupCpuUsageStatsByMinute(any());
-            assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), "예외 메세지가 일치하지 않습니다.");
+            assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), "예외가 일치하지 않습니다.");
 
         }
 
@@ -477,7 +449,7 @@ public class CpuMonitoringManageServiceTest {
 
         @BeforeEach
         void setupDateData() {
-            log.info("SoftDeleteCpuUsageStatsByHourTests @BeforeEachStart");
+            log.info("Calling setupDateData");
             pastDay = parseZonedDateTime("2024-03-01T01:00:00.000+09:00");
             when(dateUtil.getSearchMonth(THREE_MONTH)).thenReturn(pastDay);
             when(cpuUsageRateByHourRepository.softDeleteOldData(pastDay)).thenReturn(2L);
@@ -485,6 +457,7 @@ public class CpuMonitoringManageServiceTest {
         }
 
         private void verifyTotalBasicVerify() {
+            log.info("Calling verifyTotalBasicVerify");
             verify(dateUtil).getSearchMonth(THREE_MONTH);
             verify(cpuUsageRateByHourRepository).findByFlag(DELETE_FLAG);
 
@@ -532,7 +505,7 @@ public class CpuMonitoringManageServiceTest {
 
         @BeforeEach
         void setupDateData() {
-            log.info("SoftDeleteCpuUsageStatsByDayTests @BeforeEachStart");
+            log.info("Calling setupDateData");
             pastDay = parseZonedDateTime("2024-03-01T01:00:00.000+09:00");
             when(dateUtil.getSearchYear(ONE_YEAR)).thenReturn(pastDay);
             when(cpuUsageRateByDayRepository.softDeleteOldData(pastDay)).thenReturn(2L);
@@ -540,6 +513,7 @@ public class CpuMonitoringManageServiceTest {
         }
 
         private void verifyTotalBasicVerify() {
+            log.info("Calling verifyTotalBasicVerify");
             verify(dateUtil).getSearchYear(ONE_YEAR);
             verify(cpuUsageRateByDayRepository).findByFlag(DELETE_FLAG);
 

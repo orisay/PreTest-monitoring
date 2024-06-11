@@ -15,9 +15,7 @@ import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
 import com.tera.pretest.context.cpumonitoring.service.CpuMonitoringService;
 import com.tera.pretest.core.exception.restful.CustomException;
 import com.tera.pretest.core.manager.ShutdownManager;
-import com.tera.pretest.core.util.DateUtil;
-import com.tera.pretest.core.util.TimeProvider;
-import org.junit.jupiter.api.AfterAll;
+import com.tera.pretest.core.util.ProviderDateUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -56,7 +54,7 @@ public class CpuMonitoringControllerTest {
     protected ObjectMapper objectMapper;
 
     @Autowired
-    protected DateUtil dateUtil;
+    protected ProviderDateUtil dateUtil;
 
 
     @Autowired

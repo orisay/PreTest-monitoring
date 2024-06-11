@@ -17,7 +17,7 @@ import com.tera.pretest.context.cpumonitoring.service.CpuMonitoringService;
 import com.tera.pretest.core.config.ZonedDateTimeFormatConfig;
 import com.tera.pretest.core.exception.restful.CustomException;
 import com.tera.pretest.core.manager.ShutdownManager;
-import com.tera.pretest.core.util.DateUtil;
+import com.tera.pretest.core.util.ProviderDateUtil;
 import com.tera.pretest.core.util.TimeProvider;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
@@ -51,7 +51,7 @@ import static org.springframework.test.util.AssertionErrors.assertFalse;
 @Import({ZonedDateTimeFormatConfig.class, CpuMonitoringService.class})
 public class CpuMonitoringServiceTest {
     @Mock
-    private DateUtil dateUtil;
+    private ProviderDateUtil dateUtil;
 
     @Mock
     private CpuUsageRateByMinuteRepository cpuUsageRateByMinuteRepository;

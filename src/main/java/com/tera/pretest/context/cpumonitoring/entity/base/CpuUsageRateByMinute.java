@@ -28,5 +28,7 @@ public class CpuUsageRateByMinute extends LogBaseEntity {
     @Schema(description = "CPU One Minute Average Usage Rate", example = "00.00")
     private Double usageRate;
 
-
+    public CpuUsageRateByMinute(Double usageRate) {
+        this.usageRate = usageRate;
+    }
 }

@@ -4,7 +4,7 @@ import com.tera.pretest.context.cpumonitoring.factory.BuildFactory;
 import com.tera.pretest.core.config.FormatterConfig;
 import com.tera.pretest.core.manager.ShutdownManager;
 import com.tera.pretest.core.monitoring.CpuMonitoring;
-import com.tera.pretest.core.util.DateUtil;
+import com.tera.pretest.core.util.ProviderDateUtil;
 import com.tera.pretest.core.util.TimeProvider;
 import lombok.extern.log4j.Log4j2;
 import org.mockito.Mockito;
@@ -25,8 +25,8 @@ public class UnitTestConfig {
     @Primary
     @Bean
 //    @Bean(name = "DateUtilTest")
-    public DateUtil testDateUtil(TimeProvider timeProvider){
-        DateUtil mockDateUtil = Mockito.mock(DateUtil.class);
+    public ProviderDateUtil testDateUtil(TimeProvider timeProvider){
+        ProviderDateUtil mockDateUtil = Mockito.mock(ProviderDateUtil.class);
         return mockDateUtil;
     }
 

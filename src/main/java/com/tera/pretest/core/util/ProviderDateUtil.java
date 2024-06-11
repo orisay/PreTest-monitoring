@@ -1,96 +1,88 @@
 package com.tera.pretest.core.util;
 
-import com.tera.pretest.core.config.ZonedDateTimeFormatConfig;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import com.tera.pretest.core.util.interfaces.DateUtil;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.text.DecimalFormat;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 import static com.tera.pretest.core.contant.MonitoringConstant.*;
 
 @Log4j2
 @Component
-public class DateUtil {
+public class ProviderDateUtil implements DateUtil {
 
     public static TimeProvider provider;
 
     @Autowired
-    public DateUtil(TimeProvider provider) {
-        log.info("1st DateUtil DI Test provider:{}", provider);
+    public ProviderDateUtil(TimeProvider provider) {
         this.provider = provider;
     }
 
-
+    @Override
     public ZonedDateTime truncateZonedDateTimeToHour(ZonedDateTime choiceDayAndHour) {
-        log.info("DateUtil choiceDayAndHour : {}", choiceDayAndHour);
         return choiceDayAndHour.truncatedTo(ChronoUnit.HOURS);
     }
 
+    @Override
     public ZonedDateTime truncateZonedDateTimeToDay(ZonedDateTime choiceDay) {
         return choiceDay.truncatedTo(ChronoUnit.DAYS);
     }
 
-
+    @Override
     public ZonedDateTime addOneDay(ZonedDateTime inputDay) {
         return inputDay.plusDays(ONE_DAY);
     }
 
+    @Override
     public ZonedDateTime addOneHour(ZonedDateTime inputDay) {
         return inputDay.plusHours(ONE_HOUR);
     }
 
+    @Override
     public ZonedDateTime addOneDayByInputDay(ZonedDateTime inputDay) {
         return inputDay.plusDays(ONE_DAY);
     }
 
-
+    @Override
     public boolean isSameDay(ZonedDateTime inputDay) {
         ZonedDateTime today = getTodayTruncatedToDay();
         return today.equals(inputDay);
     }
 
-
+    @Override
     public ZonedDateTime getTodayTruncatedToHour() {
         return provider.getCurrentZonedDateTimeAt().truncatedTo(ChronoUnit.HOURS);
     }
 
+    @Override
     public ZonedDateTime getTodayTruncatedToDay() {
-        log.info("4th calling getTodayTruncatedToDay");
-        ZonedDateTime testValue = provider.getCurrentZonedDateTimeAt().truncatedTo(ChronoUnit.DAYS);
-        log.info("5th calling getTodayTruncatedToDay value:{}", testValue);
-//        return provider.getCurrentZonedDateTimeAt().truncatedTo(ChronoUnit.DAYS);
-        return testValue;
+        return provider.getCurrentZonedDateTimeAt().truncatedTo(ChronoUnit.DAYS);
     }
 
-
+    @Override
     public ZonedDateTime daysAgo(Integer hourToSubtract) {
-        log.info("calling getTodayTruncatedToDay");
         return provider.getCurrentZonedDateTimeAt().minusDays(hourToSubtract);
     }
 
+    @Override
     public ZonedDateTime getSearchDay(Integer daysToSubtract) {
         ZonedDateTime todayTruncated = getTodayTruncatedToDay();
-        ZonedDateTime yesterday = todayTruncated.minusDays(daysToSubtract);
-        return yesterday;
+        return todayTruncated.minusDays(daysToSubtract);
     }
 
+    @Override
     public ZonedDateTime getSearchMonth(Integer monthToSubtract) {
         ZonedDateTime todayTruncated = getTodayTruncatedToDay();
         return todayTruncated.minusMonths(monthToSubtract);
     }
 
+    @Override
     public ZonedDateTime getSearchYear(Integer yearToSubtract) {
         ZonedDateTime todayTruncated = getTodayTruncatedToDay();
         return todayTruncated.minusDays(yearToSubtract);
     }
-
 
 }

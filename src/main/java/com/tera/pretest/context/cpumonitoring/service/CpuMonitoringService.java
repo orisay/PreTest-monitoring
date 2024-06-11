@@ -13,7 +13,7 @@ import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayR
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
 import com.tera.pretest.core.exception.restful.CustomException;
-import com.tera.pretest.core.util.DateUtil;
+import com.tera.pretest.core.util.ProviderDateUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ public class CpuMonitoringService {
 
     private CpuUsageRateByDayRepository cpuUsageRateByDayRepository;
 
-    private DateUtil dateUtil;
+    private ProviderDateUtil dateUtil;
 
 
     @Transactional(readOnly = true)
