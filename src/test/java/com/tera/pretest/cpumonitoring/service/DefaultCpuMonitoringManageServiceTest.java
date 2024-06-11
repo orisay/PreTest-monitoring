@@ -40,6 +40,14 @@ import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+/*Unit Test DefaultCpuMonitoringManageServiceTest
+*Line coverage 89%
+*Class coverage 100%
+*Method coverage 77%
+* */
+
+
+
 @Log4j2
 @DisplayName("DefaultCpuMonitoringManageService Test")
 @ActiveProfiles("test")
