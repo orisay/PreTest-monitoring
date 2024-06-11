@@ -6,12 +6,52 @@ import com.tera.pretest.context.cpumonitoring.entity.backup.CpuUsageRateByMinute
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByDay;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByHour;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
+import lombok.ToString;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Log4j2
+@ToString
 public class BuildFactory {
-    private static final BuildFactory instance = new BuildFactory();
+    private static BuildFactory instance= new BuildFactory();
+
+    private BuildFactory() {
+    }
+
+    public static BuildFactory getInstance() {
+        return instance;
+    }
+
+    private static void initBuildFactory(){
+        instance = new BuildFactory();
+    }
+
+
+
+    public CpuUsageRateByDay toBuildByCpuUsageRateByDay(double average, double minimumUsage, double maximumUsage) {
+        return CpuUsageRateByDay.builder()
+                .average(average)
+                .minimumUsage(minimumUsage)
+                .maximumUsage(maximumUsage)
+                .build();
+    }
+
+    public CpuUsageRateByHour toBuildByCpuUsageRateByHour(double average, double minimumUsage, double maximumUsage) {
+        log.info("calling toBuildByCpuUsageRateByHour average:{} , minimumUsage:{}, maximumUsage:{}", average, minimumUsage, maximumUsage);
+        return CpuUsageRateByHour.builder()
+                .average(average)
+                .maximumUsage(maximumUsage)
+                .minimumUsage(minimumUsage)
+                .build();
+    }
+
+    public CpuUsageRateByMinute toBuildByCpuUsageRateByMinute(Double averageUsage) {
+        return CpuUsageRateByMinute.builder()
+                .usageRate(averageUsage)
+                .build();
+    }
 
     public  CpuUsageRateByDayBackup toBuildByDayStats(CpuUsageRateByDay backupData){
         return CpuUsageRateByDayBackup.builder()

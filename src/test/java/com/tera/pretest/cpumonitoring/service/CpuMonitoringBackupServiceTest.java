@@ -13,7 +13,8 @@ import com.tera.pretest.context.cpumonitoring.repository.backup.CpuUsageRateByMi
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
-import com.tera.pretest.core.exception.CustomException;
+import com.tera.pretest.core.exception.process.ProcessCustomException;
+import com.tera.pretest.core.exception.restful.CustomException;
 import com.tera.pretest.core.monitoring.service.CpuMonitoringBackupService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.DisplayName;
@@ -28,8 +29,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static com.tera.pretest.core.exception.CustomExceptionCode.NOT_FOUND_DATA;
-import static com.tera.pretest.core.monitoring.contant.MonitoringConstant.DELETE_FLAG;
+import static com.tera.pretest.core.contant.MonitoringConstant.DELETE_FLAG;
+import static com.tera.pretest.core.exception.process.ProcessCustomExceptionCode.NOT_FOUND_DATA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
@@ -129,7 +130,7 @@ public class CpuMonitoringBackupServiceTest {
 
             when(buildFactory.toBackupDataByMinuteStats(oldData)).thenReturn(emptyBackupData);
 
-            CustomException exception = assertThrows(CustomException.class, () -> {
+            ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringBackupService.backupCpuUsageStatsByMinute(oldData);
             });
 
@@ -162,7 +163,7 @@ public class CpuMonitoringBackupServiceTest {
 
             when(buildFactory.toBackupDataByHourStats(oldData)).thenReturn(emptyBackupData);
 
-            CustomException exception = assertThrows(CustomException.class, () -> {
+            ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringBackupService.backupCpuUsageStatsByHour(oldData);
             });
 
@@ -189,13 +190,13 @@ public class CpuMonitoringBackupServiceTest {
 
         @Test
         @DisplayName("일 단위 CPU 사용량 백업 - 예외 처리 체크")
-        void failBackupCpuUsageStatsByDayTest() throws Exception{
+        void failBackupCpuUsageStatsByDayTest() throws ProcessCustomException{
             List<CpuUsageRateByDay> oldData = Arrays.asList(new CpuUsageRateByDay());
             List<CpuUsageRateByDayBackup> emptyBackupData = Collections.emptyList();
 
             when(buildFactory.toBackupDataByDayStats(oldData)).thenReturn(emptyBackupData);
 
-            CustomException exception = assertThrows(CustomException.class, () -> {
+            ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringBackupService.backupCpuUsageStatsByDay(oldData);
             });
 
