@@ -2,7 +2,7 @@ spring:
   jackson:
     time-zone: Asia/Seoul
   profiles:
-    active: dev, dev-secret
+    active: test, test-secret
 
 server:
   port: 8080
@@ -13,6 +13,6 @@ app:
 
 logging:
   level:
-    root: WARN
-    com.tera.pretest: WARN
+    root: INFO
+    com.tera.pretest: TRACE
 

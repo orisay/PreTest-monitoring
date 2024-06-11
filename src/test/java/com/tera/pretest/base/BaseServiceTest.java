@@ -8,8 +8,8 @@ import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHour
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
 import com.tera.pretest.context.cpumonitoring.service.CpuMonitoringService;
 import com.tera.pretest.core.monitoring.service.CpuMonitoringBackupService;
-import com.tera.pretest.core.monitoring.service.CpuMonitoringManageService;
-import com.tera.pretest.core.util.DateUtil;
+import com.tera.pretest.core.monitoring.service.DefaultCpuMonitoringManageService;
+import com.tera.pretest.core.util.ProviderDateUtil;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -29,7 +29,7 @@ public abstract class BaseServiceTest {
     protected CpuUsageRateByDayRepository cpuUsageRateByDayRepository;
 
     @Mock
-    protected DateUtil dateUtil;
+    protected ProviderDateUtil dateUtil;
 
     @Mock
     protected CpuUsageRateByMinuteBackupRepository cpuUsageRateByMinuteBackupRepository;
@@ -47,7 +47,7 @@ public abstract class BaseServiceTest {
     protected CpuMonitoringBackupService cpuMonitoringBackupService;
 
     @InjectMocks
-    protected CpuMonitoringManageService cpuMonitoringManageService;
+    protected DefaultCpuMonitoringManageService defaultCpuMonitoringManageService;
 
     @InjectMocks
     protected CpuMonitoringService cpuMonitoringService;

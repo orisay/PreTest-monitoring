@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '2.6.4'
 	id 'io.spring.dependency-management' version '1.1.4'
+	id 'jacoco'
 }
 
 group = 'com.tera'
@@ -11,6 +12,49 @@ java {
 	sourceCompatibility = JavaVersion.VERSION_11
 	targetCompatibility = JavaVersion.VERSION_11
 }
+
+jacoco {
+	toolVersion = '0.8.6'
+}
+
+test {
+	finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+	reports {
+		html.required.set(true)
+		csv.required.set(true)
+		xml.required.set(false)
+	}
+}
+
+jacocoTestCoverageVerification {
+	violationRules {
+		rule {
+			enabled = true // 활성화
+			element = 'CLASS' // 클래스 단위로 커버리지 체크
+			// includes = []
+
+			// 라인 커버리지 제한을 80%로 설정
+			limit {
+				counter = 'LINE'
+				value = 'COVEREDRATIO'
+				minimum = 0.80
+			}
+
+			// 브랜치 커버리지 제한을 80%로 설정
+			limit {
+				counter = 'BRANCH'
+				value = 'COVEREDRATIO'
+				minimum = 0.80
+			}
+
+			excludes = []
+		}
+	}
+}
+
 
 repositories {
 	mavenCentral()
@@ -38,6 +82,12 @@ dependencies {
 	//testcode
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+	testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.11.0'
+
+	testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.1.1'
+	implementation group: 'net.bytebuddy', name: 'byte-buddy', version: '1.14.17'
+	testImplementation group: 'net.bytebuddy', name: 'byte-buddy-agent', version: '1.14.17'
+
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'com.h2database:h2'
@@ -45,10 +95,15 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.apache.logging.log4j:log4j-core:2.17.1'
 	testImplementation 'org.apache.logging.log4j:log4j-api:2.17.1'
+
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
 }
 
 configurations.all {

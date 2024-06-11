@@ -1,6 +1,6 @@
 package com.tera.pretest.context.cpumonitoring.entity.backup;
 
-import com.tera.pretest.core.entity.BaseEntity;
+import com.tera.pretest.core.entity.LogBaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +19,7 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @Table(name = "BAK_CPU_USAGE_RATE_BY_HOUR")
 @Entity
-public class CpuUsageRateByHourBackup extends BaseEntity { //3달 보관 후 백업
+public class CpuUsageRateByHourBackup extends LogBaseEntity {
 
     @Id
     @Column(name = "CPU_RATE_BY_HOUR_SEQ", columnDefinition = "BIGINT")

@@ -11,9 +11,13 @@ import static com.tera.pretest.core.contant.MonitoringConstant.TIME_ZONE;
 
 
 @Converter(autoApply = true)
-public class ZoneDateTimeToTimestampConvert implements AttributeConverter<ZonedDateTime, Timestamp> {
+public class ZonedDateTimeToTimestampConvert implements AttributeConverter<ZonedDateTime, Timestamp> {
 
-    private static final DateTimeFormatter dateTimeFormatter = ZoneDateTimeFormatConfig.dateTimeFormatter;
+    private DateTimeFormatter dateTimeFormatter;
+
+    public ZonedDateTimeToTimestampConvert(DateTimeFormatter dateTimeFormatter) {
+        this.dateTimeFormatter = dateTimeFormatter;
+    }
 
     @Override
     public Timestamp convertToDatabaseColumn(ZonedDateTime inputData) {

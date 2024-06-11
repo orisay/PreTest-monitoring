@@ -13,7 +13,7 @@ import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayR
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
 import com.tera.pretest.core.exception.restful.CustomException;
-import com.tera.pretest.core.util.DateUtil;
+import com.tera.pretest.core.util.ProviderDateUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -35,16 +35,15 @@ public class CpuMonitoringService {
 
     private CpuUsageRateByDayRepository cpuUsageRateByDayRepository;
 
-    private DateUtil dateUtil;
+    private ProviderDateUtil dateUtil;
 
-    //TODO ZoneTime
 
-    //truncateTimestampToHour
     @Transactional(readOnly = true)
     public ResultCpuUsageRateByMinute getCpuUsageRateByMinute(GetCpuUsageRateByMinute getCpuUsageRateByMinute) {
-        ZonedDateTime startDay = dateUtil.truncateTimestampToHour(getCpuUsageRateByMinute.getStartDay());
-        ZonedDateTime endDay = dateUtil.addOneHour(startDay);
-        List<CpuUsageRateByMinute> statsData = cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startDay, endDay);
+        ZonedDateTime startTime = dateUtil.truncateZonedDateTimeToHour(getCpuUsageRateByMinute.getStartTime());
+        ZonedDateTime endTime = dateUtil.addOneHour(startTime);
+        log.info("Service method startTime: {} , endTime: {}", startTime, endTime);
+        List<CpuUsageRateByMinute> statsData = cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startTime, endTime);
         if(statsData.isEmpty())
             throw new CustomException(NOT_FOUND_DATA);
         return ResultCpuUsageRateByMinute.toBuild(statsData);
@@ -53,7 +52,7 @@ public class CpuMonitoringService {
 
     @Transactional(readOnly = true)
     public ResultCpuUsageRateByHour getCpuUsageRateByHour(GetCpuUsageRateByHour getCpuUsageRateByHour) {
-        ZonedDateTime startDay = dateUtil.truncateTimestampToDay(getCpuUsageRateByHour.getStartDay());
+        ZonedDateTime startDay = dateUtil.truncateZonedDateTimeToDay(getCpuUsageRateByHour.getStartDay());
         ZonedDateTime endDay = dateUtil.addOneDayByInputDay(startDay);
         List<CpuUsageRateByHour> statsData = cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay);
         if(statsData.isEmpty())
@@ -63,8 +62,8 @@ public class CpuMonitoringService {
 
     @Transactional(readOnly = true)
     public ResultCpuUsageRateByDay getCpuUsageRateByDay(GetCpuUsageRateByDay getCpuUsageRateByDay) {
-        ZonedDateTime startDay = dateUtil.truncateTimestampToDay(getCpuUsageRateByDay.getStartDay());
-        ZonedDateTime endDay = dateUtil.truncateTimestampToDay(getCpuUsageRateByDay.getEndDay());
+        ZonedDateTime startDay = dateUtil.truncateZonedDateTimeToDay(getCpuUsageRateByDay.getStartDay());
+        ZonedDateTime endDay = dateUtil.truncateZonedDateTimeToDay(getCpuUsageRateByDay.getEndDay());
         ZonedDateTime exactEndDay = exactEndDayData(endDay);
         List<CpuUsageRateByDay> statsData = cpuUsageRateByDayRepository.findByCreateTimeBetween(startDay, exactEndDay);
         if(statsData.isEmpty())
