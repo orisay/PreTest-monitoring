@@ -13,7 +13,8 @@ import com.tera.pretest.context.cpumonitoring.repository.backup.CpuUsageRateByMi
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
-import com.tera.pretest.core.exception.restful.CustomException;
+import com.tera.pretest.core.exception.process.ProcessCustomException;
+import com.tera.pretest.core.exception.process.ProcessCustomExceptionCode;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Async;
@@ -24,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static com.tera.pretest.core.contant.MonitoringConstant.DELETE_FLAG;
-import static com.tera.pretest.core.exception.restful.CustomExceptionCode.NOT_FOUND_DATA;
+import static com.tera.pretest.core.exception.process.ProcessCustomExceptionCode.NOT_FOUND_DATA;
 
 @Log4j2
 @AllArgsConstructor
@@ -43,7 +44,7 @@ public class CpuMonitoringBackupService {
     public void backupCpuUsageStatsByMinute(List<CpuUsageRateByMinute> oldData){
         List<CpuUsageRateByMinuteBackup> backupData = buildFactory.toBackupDataByMinuteStats(oldData);
         if(backupData.isEmpty())
-            throw new CustomException(NOT_FOUND_DATA);
+            throw new ProcessCustomException(NOT_FOUND_DATA);
         cpuUsageRateByMinuteBackupRepository.saveAll(backupData);
     }
 
@@ -51,7 +52,7 @@ public class CpuMonitoringBackupService {
     public void backupCpuUsageStatsByHour(List<CpuUsageRateByHour> oldData){
         List<CpuUsageRateByHourBackup> backupData = buildFactory.toBackupDataByHourStats(oldData);
         if(backupData.isEmpty())
-            throw new CustomException(NOT_FOUND_DATA);
+            throw new ProcessCustomException(NOT_FOUND_DATA);
         cpuUsageRateByHourBackupRepository.saveAll(backupData);
 
     }
@@ -59,7 +60,7 @@ public class CpuMonitoringBackupService {
     public void backupCpuUsageStatsByDay(List<CpuUsageRateByDay> oldData){
         List<CpuUsageRateByDayBackup> backupData = buildFactory.toBackupDataByDayStats(oldData);
         if(backupData.isEmpty())
-            throw new CustomException(NOT_FOUND_DATA);
+            throw new ProcessCustomException(NOT_FOUND_DATA);
         cpuUsageRateByDayBackupRepository.saveAll(backupData);
 
     }
