@@ -5,6 +5,7 @@ spring:
     username: ${DATABASE.USERNAME}
     password: ${DATABASE.PASSWORD}
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: create
     show-sql: true

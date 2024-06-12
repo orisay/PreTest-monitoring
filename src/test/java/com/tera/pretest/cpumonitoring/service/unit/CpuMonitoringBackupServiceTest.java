@@ -1,4 +1,4 @@
-package com.tera.pretest.cpumonitoring.service;
+package com.tera.pretest.cpumonitoring.service.unit;
 
 import com.tera.pretest.context.cpumonitoring.entity.backup.CpuUsageRateByDayBackup;
 import com.tera.pretest.context.cpumonitoring.entity.backup.CpuUsageRateByHourBackup;
@@ -14,9 +14,9 @@ import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayR
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
 import com.tera.pretest.core.exception.process.ProcessCustomException;
-import com.tera.pretest.core.exception.restful.CustomException;
 import com.tera.pretest.core.monitoring.service.CpuMonitoringBackupService;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,8 +33,7 @@ import static com.tera.pretest.core.contant.MonitoringConstant.DELETE_FLAG;
 import static com.tera.pretest.core.exception.process.ProcessCustomExceptionCode.NOT_FOUND_DATA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @ExtendWith(MockitoExtension.class)
@@ -45,7 +44,6 @@ public class CpuMonitoringBackupServiceTest {
 
     @Mock
     protected CpuUsageRateByHourBackupRepository cpuUsageRateByHourBackupRepository;
-
 
     @Mock
     protected CpuUsageRateByDayBackupRepository cpuUsageRateByDayBackupRepository;
@@ -65,6 +63,10 @@ public class CpuMonitoringBackupServiceTest {
 
     @InjectMocks
     protected CpuMonitoringBackupService cpuMonitoringBackupService;
+
+    @BeforeEach
+    public void setup() {
+    }
 
     @Nested
     @DisplayName("분 단위 CPU 사용량 삭제")
@@ -180,11 +182,11 @@ public class CpuMonitoringBackupServiceTest {
         void successBackupCpuUsageStatsByDayTest() throws Exception{
             List<CpuUsageRateByDay> oldData = Arrays.asList(new CpuUsageRateByDay());
             List<CpuUsageRateByDayBackup> backupData = Arrays.asList(new CpuUsageRateByDayBackup());
-
-            when(buildFactory.toBackupDataByDayStats(oldData)).thenReturn(backupData);
+            when(buildFactory.toBackupDataByDayStats(eq(oldData))).thenReturn(backupData);
             cpuMonitoringBackupService.backupCpuUsageStatsByDay(oldData);
 
             verify(cpuUsageRateByDayBackupRepository).saveAll(backupData);
+
         }
 
 

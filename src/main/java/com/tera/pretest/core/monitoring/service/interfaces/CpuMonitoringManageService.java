@@ -10,15 +10,34 @@ public interface CpuMonitoringManageService {
 
     void threadSleep(long second) throws InterruptedException;
 
-    Future<Void>saveOneMinuteCpuUsageToDb();
+    Future<Void> saveOneMinuteCpuUsageToDb();
 
     void saveAverageCpuUsageByHour();
 
-    Future<Void>saveOneHourCpuUsageStatsToDb(CpuUsageRateByHour CpuUsageStat);
+    Future<Void> saveOneHourCpuUsageStatsToDb(CpuUsageRateByHour CpuUsageStat);
 
     void saveAverageCpuUsageByDay();
 
-    Future<Void>saveOneDayCpuUsageStatsToDb(CpuUsageRateByDay cpuUsageStat);
+    Future<Void> saveOneDayCpuUsageStatsToDb(CpuUsageRateByDay cpuUsageStat);
+
+    void softDeleteAndBackupCpuUsageStatsByMinute();
+
+    void softDeleteStatsByMinute();
+
+    Future<Void> backupCpuUsageStatsByMinute();
+
+    void softDeleteAndBackupOutdatedCpuUsageStatsByHour();
+
+    void softDeleteStatsByHour();
+
+    Future<Void>backupCpuUsageStatsByHour();
+
+    void softDeleteAndBackupOutdatedCpuUsageStatsByDay();
+
+    void softDeleteStatsByDay();
+
+    Future<Void> backupCpuUsageStatsByDay();
+
 
 
 }

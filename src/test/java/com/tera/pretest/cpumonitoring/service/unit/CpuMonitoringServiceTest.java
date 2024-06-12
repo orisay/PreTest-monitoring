@@ -1,4 +1,4 @@
-package com.tera.pretest.cpumonitoring.service;
+package com.tera.pretest.cpumonitoring.service.unit;
 
 import com.tera.pretest.config.UnitTestConfig;
 import com.tera.pretest.context.cpumonitoring.dto.input.GetCpuUsageRateByDay;
@@ -10,6 +10,7 @@ import com.tera.pretest.context.cpumonitoring.dto.output.ResultCpuUsageRateByMin
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByDay;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByHour;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
+import com.tera.pretest.context.cpumonitoring.factory.BuildFactory;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
@@ -18,7 +19,6 @@ import com.tera.pretest.core.config.ZonedDateTimeFormatConfig;
 import com.tera.pretest.core.exception.restful.CustomException;
 import com.tera.pretest.core.manager.ShutdownManager;
 import com.tera.pretest.core.util.ProviderDateUtil;
-import com.tera.pretest.core.util.TimeProvider;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,6 +67,9 @@ public class CpuMonitoringServiceTest {
     @Mock
     private CpuUsageRateByDayRepository cpuUsageRateByDayRepository;
 
+    @Mock
+    private BuildFactory buildFactory;
+
     @InjectMocks
     private CpuMonitoringService cpuMonitoringService;
 
@@ -74,6 +77,7 @@ public class CpuMonitoringServiceTest {
     private ShutdownManager shutdownManager;
 
     private DateTimeFormatter formatter;
+
 
     @BeforeEach
     public void setup() {
@@ -227,7 +231,7 @@ public class CpuMonitoringServiceTest {
             ZonedDateTime exactEndDay = endDay.plusDays(ONE_DAY);
             when(dateUtil.addOneDay(endDay)).thenReturn(exactEndDay);
 
-            log.info("Test parameter startDay:{} exactEndDay:{}", startDay, exactEndDay);
+            log.debug("Test parameter startDay:{} exactEndDay:{}", startDay, exactEndDay);
 
             when(cpuUsageRateByDayRepository.findByCreateTimeBetween(startDay, exactEndDay))
                     .thenReturn(Collections.singletonList(new CpuUsageRateByDay()));

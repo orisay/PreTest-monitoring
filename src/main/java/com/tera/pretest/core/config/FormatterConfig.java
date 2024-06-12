@@ -1,9 +1,7 @@
 package com.tera.pretest.core.config;
 
 import lombok.extern.log4j.Log4j2;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.text.DecimalFormat;
@@ -21,7 +19,6 @@ public class FormatterConfig {
 
     }
 
-    @Bean
     public Double changeDecimalFormatCpuUsage(Double cpuUsage) {
         log.info("changeDecimalFormatCpuUsage cpuUsage :{}, and decimalFormat:{}", cpuUsage, decimalFormat);
         return Double.parseDouble(decimalFormat.format(cpuUsage));

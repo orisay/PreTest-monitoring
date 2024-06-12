@@ -14,7 +14,6 @@ import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayR
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
 import com.tera.pretest.core.exception.process.ProcessCustomException;
-import com.tera.pretest.core.exception.process.ProcessCustomExceptionCode;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Async;
@@ -38,7 +37,7 @@ public class CpuMonitoringBackupService {
     private final CpuUsageRateByMinuteBackupRepository cpuUsageRateByMinuteBackupRepository;
     private final CpuUsageRateByHourBackupRepository cpuUsageRateByHourBackupRepository;
     private final CpuUsageRateByDayBackupRepository cpuUsageRateByDayBackupRepository;
-    private BuildFactory buildFactory;
+    private final BuildFactory buildFactory;
 
 
     public void backupCpuUsageStatsByMinute(List<CpuUsageRateByMinute> oldData){

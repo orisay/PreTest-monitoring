@@ -8,27 +8,15 @@ import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByHour;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
 import lombok.ToString;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Log4j2
 @ToString
+@Component
 public class BuildFactory {
-    private static BuildFactory instance= new BuildFactory();
-
-    private BuildFactory() {
-    }
-
-    public static BuildFactory getInstance() {
-        return instance;
-    }
-
-    private static void initBuildFactory(){
-        instance = new BuildFactory();
-    }
-
-
 
     public CpuUsageRateByDay toBuildByCpuUsageRateByDay(double average, double minimumUsage, double maximumUsage) {
         return CpuUsageRateByDay.builder()
@@ -39,7 +27,6 @@ public class BuildFactory {
     }
 
     public CpuUsageRateByHour toBuildByCpuUsageRateByHour(double average, double minimumUsage, double maximumUsage) {
-        log.info("calling toBuildByCpuUsageRateByHour average:{} , minimumUsage:{}, maximumUsage:{}", average, minimumUsage, maximumUsage);
         return CpuUsageRateByHour.builder()
                 .average(average)
                 .maximumUsage(maximumUsage)
@@ -65,7 +52,7 @@ public class BuildFactory {
 
     public  List<CpuUsageRateByDayBackup> toBackupDataByDayStats(List<CpuUsageRateByDay> backupData){
         return backupData.stream()
-                .map(data -> instance.toBuildByDayStats(data))
+                .map(this::toBuildByDayStats)
                 .collect(Collectors.toList());
     }
 
@@ -81,7 +68,7 @@ public class BuildFactory {
 
     public  List<CpuUsageRateByHourBackup> toBackupDataByHourStats(List<CpuUsageRateByHour> backupData) {
         return backupData.stream()
-                .map(data->instance.toBuildByHourStats(data))
+                .map(this::toBuildByHourStats)
                 .collect(Collectors.toList());
     }
 
@@ -96,7 +83,7 @@ public class BuildFactory {
 
     public List<CpuUsageRateByMinuteBackup> toBackupDataByMinuteStats(List<CpuUsageRateByMinute> backupData){
         return backupData.stream()
-                .map(data->instance.toBuildByMinuteStats(data))
+                .map(this::toBuildByMinuteStats)
                 .collect(Collectors.toList());
     }
 

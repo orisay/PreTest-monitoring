@@ -1,14 +1,17 @@
 package com.tera.pretest.core.entity;
 
 import com.tera.pretest.core.config.TimeProviderListener;
-import com.tera.pretest.core.util.TimeProvider;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.EntityListeners;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.PrePersist;
 import java.sql.Timestamp;
 
 @ToString

@@ -21,7 +21,7 @@ public class CpuUsageRateByHour extends LogBaseEntity {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "CPU_RATE_BY_HOUR_SEQ", columnDefinition = "BIGINT")
     @Schema(description = "Sequence or Auto Increment", type = "integer", format = "int64")
     private Long cpuRateByHourSeq;

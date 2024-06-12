@@ -7,15 +7,13 @@ import com.tera.pretest.core.monitoring.CpuMonitoring;
 import com.tera.pretest.core.util.ProviderDateUtil;
 import com.tera.pretest.core.util.TimeProvider;
 import lombok.extern.log4j.Log4j2;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 
 
 @Log4j2
-@TestConfiguration
+//@TestConfiguration
 public class UnitTestConfig {
 
     @Value("${app.datetime-format:yyyy-MM-dd'T'HH:mm:ss.SSSXXX}")
@@ -24,47 +22,34 @@ public class UnitTestConfig {
 
     @Primary
     @Bean
-//    @Bean(name = "DateUtilTest")
     public ProviderDateUtil testDateUtil(TimeProvider timeProvider){
-        ProviderDateUtil mockDateUtil = Mockito.mock(ProviderDateUtil.class);
-        return mockDateUtil;
+        return new ProviderDateUtil(timeProvider);
     }
 
 
     @Primary
     @Bean
-//    @Bean(name = "TimeProviderTest")
     public TimeProvider testTimeProvider(){
-        return Mockito.mock(TimeProvider.class);
+        return new TimeProvider();
     }
 
     @Primary
     @Bean
-    public CpuMonitoring mockCpuMonitoring() {
-        return Mockito.mock(CpuMonitoring.class);
-    }
-
-    @Primary
-    @Bean
-//    @Bean(name = "ShutdownManagerTest")
     public ShutdownManager testShutdownManager(TimeProvider timeProvider, CpuMonitoring cpuMonitoring) {
         return new ShutdownManager(timeProvider, cpuMonitoring);
     }
 
     @Primary
     @Bean
-//    @Bean(name = "BuildFactoryTest")
     public BuildFactory testBuildFactory(){
-        BuildFactory buildFactory = Mockito.mock(BuildFactory.class);
-        return buildFactory;
+        return new BuildFactory();
     }
 
 
     @Primary
     @Bean
-//    @Bean(name="FormatterConfigTest")
     public FormatterConfig TestformatterConfig(){
-        return Mockito.mock(FormatterConfig.class);
+        return new FormatterConfig();
     }
 
 }

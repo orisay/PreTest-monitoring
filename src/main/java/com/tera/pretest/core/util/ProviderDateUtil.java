@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
-import static com.tera.pretest.core.contant.MonitoringConstant.*;
+import static com.tera.pretest.core.contant.MonitoringConstant.ONE_DAY;
+import static com.tera.pretest.core.contant.MonitoringConstant.ONE_HOUR;
 
 @Log4j2
 @Component

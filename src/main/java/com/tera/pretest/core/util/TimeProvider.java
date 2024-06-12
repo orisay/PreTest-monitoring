@@ -1,14 +1,11 @@
 package com.tera.pretest.core.util;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,27 +26,23 @@ public class TimeProvider {
 
 
     public TimeProvider() {
-        log.info("TimeProvider start Log");
-        log.info("TimeProvider second Log");
-        log.info("TimeProvider third Log");
+        log.debug("Calling TimeProvider constructor");
+        updateTime();
         scheduledExecutorService.scheduleAtFixedRate(this::updateTime, 0, UPDATE_INTERVAL_TIME, TimeUnit.MINUTES);
     }
 
-
-
-
-
     public void updateTime() {
+        log.debug("Calling updateTime");
         ZonedDateTime nowZoneDateTime = ZonedDateTime.now(ZoneId.of(TIME_ZONE));
         Timestamp nowTimestamp = Timestamp.from(nowZoneDateTime.toInstant());
         currentZonedDateTimeAt.set(nowZoneDateTime);
         currentTimestampAt.set(nowTimestamp);
-        log.info("TimeProvider updateTime first Log nowZoneDateTime:{}", nowZoneDateTime);
+        log.debug("TimeProvider updateTime first Log nowZoneDateTime:{}", nowZoneDateTime);
     }
 
     public ZonedDateTime getCurrentZonedDateTimeAt() {
-        log.info("Test currentZonedDateTimeAt Start");
-        log.info("Test currentZonedDateTimeAt.get():{}", currentZonedDateTimeAt.get());
+        log.debug("Test currentZonedDateTimeAt Start");
+        log.debug("Test currentZonedDateTimeAt.get():{}", currentZonedDateTimeAt.get());
         return currentZonedDateTimeAt.get();
     }
 
@@ -79,6 +72,5 @@ public class TimeProvider {
     private boolean awaitShutdown() throws InterruptedException {
         return scheduledExecutorService.awaitTermination(TEN_SECOND, TimeUnit.SECONDS);
     }
-
 
 }
