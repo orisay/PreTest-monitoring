@@ -1,6 +1,5 @@
 package com.tera.pretest.cpumonitoring.service.unit;
 
-import com.tera.pretest.config.UnitTestConfig;
 import com.tera.pretest.context.cpumonitoring.dto.input.GetCpuUsageRateByDay;
 import com.tera.pretest.context.cpumonitoring.dto.input.GetCpuUsageRateByHour;
 import com.tera.pretest.context.cpumonitoring.dto.input.GetCpuUsageRateByMinute;
@@ -28,7 +27,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -51,7 +49,6 @@ import static org.springframework.test.util.AssertionErrors.assertFalse;
 @DisplayName("CpuMonitoringService Test")
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
-@ContextConfiguration(classes = UnitTestConfig.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Import({ZonedDateTimeFormatConfig.class, CpuMonitoringService.class})
 public class CpuMonitoringServiceTest {

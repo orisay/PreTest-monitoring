@@ -79,6 +79,10 @@ dependencies {
 	//cpu monitoring
 	implementation group: 'com.github.oshi', name: 'oshi-core', version: '6.6.0'
 
+	//JPA show Query
+//	implementation("p6spy:p6spy:3.9.1")  jdbc:p6spy:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE p6spy추가
+//	implementation("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0")
+
 	//testcode
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'

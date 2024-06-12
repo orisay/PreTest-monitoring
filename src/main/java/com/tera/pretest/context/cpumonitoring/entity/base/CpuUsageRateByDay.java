@@ -2,10 +2,7 @@ package com.tera.pretest.context.cpumonitoring.entity.base;
 
 import com.tera.pretest.core.entity.LogBaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
@@ -13,6 +10,7 @@ import javax.persistence.*;
 
 @ToString
 @SuperBuilder
+@Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor

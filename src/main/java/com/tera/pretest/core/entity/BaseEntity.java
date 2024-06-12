@@ -1,20 +1,24 @@
 package com.tera.pretest.core.entity;
 
 import com.tera.pretest.core.config.TimeProviderListener;
+import com.tera.pretest.core.config.ZonedDateTimeToStringConvert;
+import com.tera.pretest.core.config.ZonedDateTimeToTimestampConvert;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.annotation.LastModifiedDate;
 
-import javax.persistence.Column;
-import javax.persistence.EntityListeners;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.PrePersist;
+import javax.persistence.*;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 
+@Log4j2
 @ToString
+@Setter
 @Getter
 @SuperBuilder
 @NoArgsConstructor
@@ -26,20 +30,23 @@ public class BaseEntity {
     @Column(insertable = false, nullable = false, columnDefinition = "CHAR(1) DEFAULT 'N'")
     private String flag;
 
+    @Convert(converter = ZonedDateTimeToTimestampConvert.class)
     @Schema(description = "저장된 시간")
     @Column(updatable = false)
-    protected Timestamp createTime;
+    private ZonedDateTime createTime;
 
+    @Convert(converter = ZonedDateTimeToTimestampConvert.class)
     @Schema(description = "소프트 딜리트 될 때 값 변경")
     @LastModifiedDate
-    private Timestamp updateTIme;
+    private ZonedDateTime updateTIme;
 
     @PrePersist
     protected void insertBaseData() {
+        log.debug("Calling insertBaseData");
         if (this.flag == null)
             flag = "N";
         if(this.createTime == null)
-            createTime= TimeProviderListener.getCurrentTimeStamp();
+            createTime= TimeProviderListener.getCurrentZonedDateTime();
     }
 
 }

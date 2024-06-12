@@ -21,18 +21,19 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @MappedSuperclass
 @EntityListeners(TimeProviderListener.class)
-public class LogBaseEntity extends BaseEntity{
+public class LogBaseEntity extends BaseEntity {
 
     @Convert(converter = ZonedDateTimeToStringConvert.class)
     @Schema(description = "Time Zone Log")
-    @Column( nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255)")
     private ZonedDateTime timeZoneAt;
 
+
     @PrePersist
-    private void insertLogData(){
+    private void insertLogData() {
         super.insertBaseData();
         log.debug("insertLogData before nullCheck timeZoneAt:{}", timeZoneAt);
-        if(this.timeZoneAt == null)
+        if (this.timeZoneAt == null)
             this.timeZoneAt = TimeProviderListener.getCurrentZonedDateTime();
         log.debug("insertLogData after nullCheck timeZoneAt:{}", timeZoneAt);
 

@@ -18,19 +18,19 @@ public class ZonedDateTimeFormatConfig {
     @Value("${app.datetime-format}")
     private String zonedDateTimeFormat;
 
-    public static DateTimeFormatter dateTimeFormatter;
+    public DateTimeFormatter dateTimeFormatter;
 
 
     @PostConstruct
-    public void initZoneDateTimeFormatter(){
-        log.info("init 1st work initZoneDateTimeFormatter before dateTimeFormatter:{}",dateTimeFormatter);
-        log.info("init 2nd work initZoneDateTimeFormatter before need dateTimeFormatter:{}",zonedDateTimeFormat);
+    public void initZoneDateTimeFormatter() {
+        log.info("init 1st work initZoneDateTimeFormatter before dateTimeFormatter:{}", dateTimeFormatter);
+        log.info("init 2nd work initZoneDateTimeFormatter before need dateTimeFormatter:{}", zonedDateTimeFormat);
         dateTimeFormatter = DateTimeFormatter.ofPattern(zonedDateTimeFormat);
-        log.info("init 3th work initZoneDateTimeFormatter after dateTimeFormatter:{}",dateTimeFormatter);
+        log.info("init 3th work initZoneDateTimeFormatter after dateTimeFormatter:{}", dateTimeFormatter);
     }
 
     @Bean
-    public DateTimeFormatter dateTimeFormatter(){
+    public DateTimeFormatter dateTimeFormatter() {
         log.info("4th return DateTimeFormatter bean: {}", dateTimeFormatter);
         return dateTimeFormatter;
     }

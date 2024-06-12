@@ -20,7 +20,6 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Import;
@@ -34,7 +33,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import static com.tera.pretest.core.contant.MonitoringConstant.*;
@@ -156,7 +154,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             InterruptedException exception = assertThrows(InterruptedException.class, () -> {
                 cpuMonitoringManageService.threadSleep(TEN_SECOND);
-            });
+            },NOT_MATCH_EXCEPTION);
 
             assertEquals(InterruptedException.class, exception.getClass(), NOT_MATCH_EXCEPTION);
         }
@@ -235,7 +233,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringManageService.saveAverageCpuUsageByHour();
-            });
+            },NOT_MATCH_EXCEPTION);
 
             commonVerify();
             assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage());
@@ -264,7 +262,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringManageService.saveOneHourCpuUsageStatsToDb(cpuUsageStat);
-            });
+            },NOT_MATCH_EXCEPTION);
 
             verify(cpuUsageRateByHourRepository).save(cpuUsageStat);
             assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), NOT_MATCH_EXCEPTION_MESSAGE);
@@ -339,7 +337,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringManageService.saveAverageCpuUsageByDay();
-            });
+            }, NOT_MATCH_EXCEPTION);
 
             commonVerify();
             assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), NOT_MATCH_EXCEPTION_MESSAGE);
@@ -370,7 +368,7 @@ public class DefaultCpuMonitoringManageServiceTest {
             when(cpuUsageRateByDayRepository.save(cpuUsageStat)).thenThrow(new ProcessCustomException(NOT_FOUND_DATA));
             ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringManageService.saveOneDayCpuUsageStatsToDb(cpuUsageStat);
-            });
+            }, NOT_MATCH_EXCEPTION);
 
             verify(cpuUsageRateByDayRepository).save(cpuUsageStat);
             assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), NOT_MATCH_EXCEPTION_MESSAGE);
@@ -417,7 +415,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             DataAccessException exception = assertThrows(DataAccessException.class, () -> {
                 cpuMonitoringManageService.softDeleteStatsByMinute();
-            });
+            },NOT_MATCH_EXCEPTION);
 
             commonVerify();
             assertEquals(RELATED_DB_EXCEPTION, exception.getMessage(), NOT_MATCH_EXCEPTION_MESSAGE);
@@ -451,7 +449,7 @@ public class DefaultCpuMonitoringManageServiceTest {
             ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringManageService.backupCpuUsageStatsByMinute();
 
-            });
+            },NOT_MATCH_EXCEPTION);
 
             verify(cpuUsageRateByMinuteRepository).findByFlag(DELETE_FLAG);
             verify(cpuMonitoringBackupService, never()).backupCpuUsageStatsByMinute(empty);
@@ -500,7 +498,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             DataAccessException exception = assertThrows(DataAccessException.class, () -> {
                 cpuMonitoringManageService.softDeleteStatsByHour();
-            });
+            },NOT_MATCH_EXCEPTION);
 
             commonVerify();
             verify(cpuUsageRateByHourRepository).softDeleteOldData(pastDay);
@@ -534,7 +532,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringManageService.backupCpuUsageStatsByHour();
-            });
+            },NOT_MATCH_EXCEPTION);
 
             verify(cpuUsageRateByHourRepository).findByFlag(DELETE_FLAG);
             verify(cpuMonitoringBackupService, never()).backupCpuUsageStatsByHour(empty);
@@ -583,7 +581,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             DataAccessException exception = assertThrows(DataAccessException.class, () -> {
                 cpuMonitoringManageService.softDeleteStatsByDay();
-            });
+            },NOT_MATCH_EXCEPTION);
 
             commonVerify();
             verify(cpuUsageRateByDayRepository).softDeleteOldData(pastDay);
@@ -622,7 +620,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringManageService.backupCpuUsageStatsByDay();
-            });
+            },NOT_MATCH_EXCEPTION);
 
             commonVerify();
             verify(cpuMonitoringBackupService, never()).backupCpuUsageStatsByDay(empty);
