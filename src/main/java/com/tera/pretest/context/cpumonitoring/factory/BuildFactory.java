@@ -46,6 +46,7 @@ public class BuildFactory {
                 .average(backupData.getAverage())
                 .maximumUsage(backupData.getMaximumUsage())
                 .minimumUsage(backupData.getMinimumUsage())
+                .flag(backupData.getFlag())
                 .createTime(backupData.getCreateTime())
                 .build();
     }
@@ -62,6 +63,7 @@ public class BuildFactory {
                 .average(backupData.getAverage())
                 .maximumUsage(backupData.getMaximumUsage())
                 .minimumUsage(backupData.getMinimumUsage())
+                .flag(backupData.getFlag())
                 .createTime(backupData.getCreateTime())
                 .build();
     }
@@ -77,6 +79,7 @@ public class BuildFactory {
                 .cpuRateByMinuteSeq(backupData.getCpuRateByMinuteSeq())
                 .usageRate(backupData.getUsageRate())
                 .createTime(backupData.getCreateTime())
+                .flag(backupData.getFlag())
                 .build();
 
     }

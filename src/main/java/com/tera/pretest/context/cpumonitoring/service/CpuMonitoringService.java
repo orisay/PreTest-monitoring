@@ -29,13 +29,13 @@ import static com.tera.pretest.core.exception.restful.CustomExceptionCode.NOT_FO
 @Service
 public class CpuMonitoringService {
 
-    private CpuUsageRateByMinuteRepository cpuUsageRateByMinuteRepository;
+    private final CpuUsageRateByMinuteRepository cpuUsageRateByMinuteRepository;
 
-    private CpuUsageRateByHourRepository cpuUsageRateByHourRepository;
+    private final CpuUsageRateByHourRepository cpuUsageRateByHourRepository;
 
-    private CpuUsageRateByDayRepository cpuUsageRateByDayRepository;
+    private final CpuUsageRateByDayRepository cpuUsageRateByDayRepository;
 
-    private ProviderDateUtil dateUtil;
+    private final ProviderDateUtil dateUtil;
 
 
     @Transactional(readOnly = true)

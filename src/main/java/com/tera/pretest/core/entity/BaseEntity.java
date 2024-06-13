@@ -1,7 +1,6 @@
 package com.tera.pretest.core.entity;
 
 import com.tera.pretest.core.config.TimeProviderListener;
-import com.tera.pretest.core.config.ZonedDateTimeToStringConvert;
 import com.tera.pretest.core.config.ZonedDateTimeToTimestampConvert;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -13,7 +12,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
 @Log4j2
@@ -27,7 +25,7 @@ import java.time.ZonedDateTime;
 public class BaseEntity {
 
     @Schema(description = "Soft Delete Backup Flag")
-    @Column(insertable = false, nullable = false, columnDefinition = "CHAR(1) DEFAULT 'N'")
+    @Column(nullable = false, columnDefinition = "CHAR(1) DEFAULT 'N'")
     private String flag;
 
     @Convert(converter = ZonedDateTimeToTimestampConvert.class)
@@ -38,7 +36,7 @@ public class BaseEntity {
     @Convert(converter = ZonedDateTimeToTimestampConvert.class)
     @Schema(description = "소프트 딜리트 될 때 값 변경")
     @LastModifiedDate
-    private ZonedDateTime updateTIme;
+    private ZonedDateTime updateTime;
 
     @PrePersist
     protected void insertBaseData() {

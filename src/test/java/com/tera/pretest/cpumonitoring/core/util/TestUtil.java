@@ -1,4 +1,4 @@
-package com.tera.pretest.cpumonitoring.util;
+package com.tera.pretest.cpumonitoring.core.util;
 
 import java.text.DecimalFormat;
 

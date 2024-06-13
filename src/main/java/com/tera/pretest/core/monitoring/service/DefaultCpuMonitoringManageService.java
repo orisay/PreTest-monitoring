@@ -35,6 +35,7 @@ import static com.tera.pretest.core.exception.process.ProcessCustomExceptionCode
 
 @Log4j2
 @AllArgsConstructor
+@Transactional
 @Service
 public class DefaultCpuMonitoringManageService implements CpuMonitoringManageService {
 
@@ -111,8 +112,8 @@ public class DefaultCpuMonitoringManageService implements CpuMonitoringManageSer
     @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public Future<Void> saveOneHourCpuUsageStatsToDb(CpuUsageRateByHour CpuUsageStat) {
-        cpuUsageRateByHourRepository.save(CpuUsageStat);
+    public Future<Void> saveOneHourCpuUsageStatsToDb(CpuUsageRateByHour cpuUsageStat) {
+        cpuUsageRateByHourRepository.save(cpuUsageStat);
         return AsyncResult.forValue(null);
     }
 
