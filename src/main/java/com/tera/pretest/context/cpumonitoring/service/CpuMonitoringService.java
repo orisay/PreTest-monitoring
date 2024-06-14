@@ -53,7 +53,7 @@ public class CpuMonitoringService {
     @Transactional(readOnly = true)
     public ResultCpuUsageRateByHour getCpuUsageRateByHour(GetCpuUsageRateByHour getCpuUsageRateByHour) {
         ZonedDateTime startDay = dateUtil.truncateZonedDateTimeToDay(getCpuUsageRateByHour.getStartDay());
-        ZonedDateTime endDay = dateUtil.addOneDayByInputDay(startDay);
+        ZonedDateTime endDay = dateUtil.addOneDay(startDay);
         List<CpuUsageRateByHour> statsData = cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay);
         if(statsData.isEmpty())
             throw new CustomException(NOT_FOUND_DATA);

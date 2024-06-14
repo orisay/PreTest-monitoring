@@ -14,7 +14,7 @@ import javax.persistence.*;
 import java.time.ZonedDateTime;
 
 @Log4j2
-@ToString
+@ToString(callSuper = true)
 @Setter
 @Getter
 @SuperBuilder
@@ -32,10 +32,10 @@ public class LogBaseEntity extends BaseEntity {
     @PrePersist
     private void insertLogData() {
         super.insertBaseData();
-        log.debug("insertLogData before nullCheck timeZoneAt:{}", timeZoneAt);
+        log.info("insertLogData before nullCheck timeZoneAt:{}", timeZoneAt);
         if (this.timeZoneAt == null)
             this.timeZoneAt = TimeProviderListener.getCurrentZonedDateTime();
-        log.debug("insertLogData after nullCheck timeZoneAt:{}", timeZoneAt);
+        log.info("insertLogData after nullCheck timeZoneAt:{}", timeZoneAt);
 
     }
 

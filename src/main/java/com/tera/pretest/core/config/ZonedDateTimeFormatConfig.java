@@ -5,9 +5,16 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import javax.annotation.PostConstruct;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+
+import static com.tera.pretest.core.contant.MonitoringConstant.TIME_ZONE;
 
 
 @Log4j2
@@ -33,6 +40,18 @@ public class ZonedDateTimeFormatConfig {
     public DateTimeFormatter dateTimeFormatter() {
         log.info("4th return DateTimeFormatter bean: {}", dateTimeFormatter);
         return dateTimeFormatter;
+    }
+
+    @Bean
+    public Clock clock() {
+        return Clock.system(ZoneId.of(TIME_ZONE));
+    }
+
+    @Bean
+    @Profile("totalTest")
+    public Clock testClock() {
+        Instant fixedInstant = LocalDateTime.parse("2024-05-23T01:00:00.000").atZone(ZoneId.of("Asia/Seoul")).toInstant();
+        return Clock.fixed(fixedInstant, ZoneId.of("Asia/Seoul"));
     }
 
 }

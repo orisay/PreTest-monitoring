@@ -103,6 +103,8 @@ public class DefaultCpuMonitoringManageService implements CpuMonitoringManageSer
         List<CpuUsageRateByMinute> cpuUsageAverageStats =
                 cpuUsageRateByMinuteRepository.findByCreateTimeBetween(startDay, endDay);
         if (cpuUsageAverageStats.isEmpty()) {
+            log.warn("getMonitoringCpUsageByOneMinuteStats startDay:{}, endDay:{}",startDay, endDay);
+            log.warn("getMonitoringCpUsageByOneMinuteStats cpuUsageAverageStats:{}",cpuUsageAverageStats);
             throw new ProcessCustomException(NOT_FOUND_DATA);
         }
         return cpuUsageAverageStats;

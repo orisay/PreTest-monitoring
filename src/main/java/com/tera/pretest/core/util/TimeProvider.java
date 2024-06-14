@@ -1,9 +1,11 @@
 package com.tera.pretest.core.util;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
+import java.time.Clock;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.concurrent.Executors;
@@ -17,23 +19,33 @@ import static com.tera.pretest.core.contant.MonitoringConstant.*;
 @Component
 public class TimeProvider {
 
-
     private final AtomicReference<ZonedDateTime> currentZonedDateTimeAt = new AtomicReference<>();
 
     private AtomicReference<Timestamp> currentTimestampAt = new AtomicReference<>();
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
+//    @Autowired
+    private Clock clock;
 
-    public TimeProvider() {
+
+    @Autowired
+    public TimeProvider(Clock clock) {
+        this.clock = clock;
         log.debug("Calling TimeProvider constructor");
         updateTime();
         scheduledExecutorService.scheduleAtFixedRate(this::updateTime, 0, UPDATE_INTERVAL_TIME, TimeUnit.MINUTES);
     }
 
+    public void setClockFixedTime(Clock clock){
+        this.clock = clock;
+        updateTime();
+    }
+
     public void updateTime() {
         log.debug("Calling updateTime");
-        ZonedDateTime nowZoneDateTime = ZonedDateTime.now(ZoneId.of(TIME_ZONE));
+        ZoneId zoneId = ZoneId.of(TIME_ZONE);
+        ZonedDateTime nowZoneDateTime = ZonedDateTime.now(clock.withZone(zoneId));
         Timestamp nowTimestamp = Timestamp.from(nowZoneDateTime.toInstant());
         currentZonedDateTimeAt.set(nowZoneDateTime);
         currentTimestampAt.set(nowTimestamp);

@@ -1,5 +1,6 @@
 package com.tera.pretest.cpumonitoring.service.total;
 
+import com.tera.pretest.config.IntegratedTestConfig;
 import com.tera.pretest.context.cpumonitoring.entity.backup.CpuUsageRateByDayBackup;
 import com.tera.pretest.context.cpumonitoring.entity.backup.CpuUsageRateByHourBackup;
 import com.tera.pretest.context.cpumonitoring.entity.backup.CpuUsageRateByMinuteBackup;
@@ -15,17 +16,23 @@ import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHour
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
 import com.tera.pretest.core.exception.process.ProcessCustomException;
 import com.tera.pretest.core.monitoring.service.CpuMonitoringBackupService;
+import com.tera.pretest.core.util.TimeProvider;
 import com.tera.pretest.cpumonitoring.core.helper.DaySetupHelper;
 import com.tera.pretest.cpumonitoring.core.helper.HourSetupHelper;
 import com.tera.pretest.cpumonitoring.core.helper.MinuteSetupHelper;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.time.Clock;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,7 +43,11 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @Log4j2
 @SpringBootTest
-@DisplayName("CpuMonitoringBackupServiceIntegratedTest")
+@ContextConfiguration(classes = IntegratedTestConfig.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@Transactional
+@ActiveProfiles("totalTest")
+@DisplayName("BackupServiceTests")
 public class CpuMonitoringBackupServiceIntegratedTests {
 
     private final CpuUsageRateByMinuteRepository cpuUsageRateByMinuteRepository;
@@ -58,6 +69,17 @@ public class CpuMonitoringBackupServiceIntegratedTests {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private TimeProvider timeProvider;
+
+    @Autowired
+    @Qualifier("basicClock")
+    private Clock baseClock;
+
+    @Autowired
+    @Qualifier("FixedTestClock")
+    private Clock testClock;
 
     private final String RELATED_DB_EXCEPTION = "DB 관련 모든 경우 에러 케이스";
     private final String NOT_MATCH_EXCEPTION = "예외가 일치하지 않습니다.";
@@ -206,7 +228,7 @@ public class CpuMonitoringBackupServiceIntegratedTests {
         @Test
         @DisplayName("리스트 값 예상값 검증")
         public void conditionListValue() {
-            assertThat(resultData.get(0).getMaximumUsage()).isEqualTo(75.00);
+            assertThat(resultData.get(0).getMaximumUsage()).isEqualTo(oldData.get(0).getMaximumUsage());
         }
 
         @Test

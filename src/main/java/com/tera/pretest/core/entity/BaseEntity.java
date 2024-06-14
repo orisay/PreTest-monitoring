@@ -40,7 +40,7 @@ public class BaseEntity {
 
     @PrePersist
     protected void insertBaseData() {
-        log.debug("Calling insertBaseData");
+        log.info("Calling insertBaseData Flag Value:{}",this.flag);
         if (this.flag == null)
             flag = "N";
         if(this.createTime == null)
