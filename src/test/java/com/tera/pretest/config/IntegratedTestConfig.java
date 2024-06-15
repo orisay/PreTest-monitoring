@@ -2,11 +2,14 @@ package com.tera.pretest.config;
 
 import com.tera.pretest.context.cpumonitoring.factory.BuildFactory;
 import com.tera.pretest.core.config.FormatterConfig;
+import com.tera.pretest.core.config.abstracts.ThreadConfig;
 import com.tera.pretest.core.manager.ShutdownManager;
 import com.tera.pretest.core.monitoring.CpuMonitoring;
+import com.tera.pretest.core.monitoring.service.DefaultCpuMonitoringManageService;
 import com.tera.pretest.core.util.ProviderDateUtil;
 import com.tera.pretest.core.util.TimeProvider;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +20,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.concurrent.TimeUnit;
 
 import static com.tera.pretest.core.contant.MonitoringConstant.TIME_ZONE;
 

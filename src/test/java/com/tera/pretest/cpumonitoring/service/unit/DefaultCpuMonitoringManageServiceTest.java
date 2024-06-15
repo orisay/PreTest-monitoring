@@ -7,8 +7,10 @@ import com.tera.pretest.context.cpumonitoring.factory.BuildFactory;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
+import com.tera.pretest.core.config.DefaultThreadConfig;
 import com.tera.pretest.core.config.FormatterConfig;
 import com.tera.pretest.core.config.ZonedDateTimeFormatConfig;
+import com.tera.pretest.core.config.abstracts.ThreadConfig;
 import com.tera.pretest.core.exception.process.ProcessCustomException;
 import com.tera.pretest.core.manager.MinuteStatDataBufferManager;
 import com.tera.pretest.core.manager.ShutdownManager;
@@ -45,13 +47,12 @@ import static org.mockito.Mockito.*;
 /*Unit Test DefaultCpuMonitoringManageServiceTest
  *Line coverage 83%
  *Class coverage 100%
- *Method coverage 79%
+ *Method coverage 73%
  * */
 
 
 @Log4j2
-@DisplayName("DefaultCpuMonitoringManageService Test")
-@ActiveProfiles("test")
+@DisplayName("DefaultCpuMonitoringManageService Tests")
 @ExtendWith(MockitoExtension.class)
 @Import({ZonedDateTimeFormatConfig.class, DefaultCpuMonitoringManageService.class})
 public class DefaultCpuMonitoringManageServiceTest {
@@ -85,6 +86,9 @@ public class DefaultCpuMonitoringManageServiceTest {
 
     @Mock
     private BuildFactory buildFactory;
+
+    @Mock
+    private DefaultThreadConfig threadConfig;
 
     @Spy
     @InjectMocks
@@ -132,14 +136,14 @@ public class DefaultCpuMonitoringManageServiceTest {
             double averageCpuUsagePercentage = averageCpuUsage * PERCENTAGE;
             CpuUsageRateByMinute insertData = new CpuUsageRateByMinute();
 
-            doNothing().when(cpuMonitoringManageService).threadSleep(TEN_SECOND);
+            doNothing().when(threadConfig).sleepThread(TEN_SECOND);
             when(centralProcessor.getSystemCpuLoadTicks()).thenReturn(startTicks);
             when(centralProcessor.getSystemCpuLoadBetweenTicks(startTicks)).thenReturn(averageCpuUsage);
             when(formatterConfig.changeDecimalFormatCpuUsage(any(Double.class))).thenReturn(averageCpuUsagePercentage);
             when(buildFactory.toBuildByCpuUsageRateByMinute(any(Double.class))).thenReturn(insertData);
             cpuMonitoringManageService.saveMonitoringCpuUsage();
 
-            verify(cpuMonitoringManageService, times(ONE_MINUTE_COUNT_BY_SEC)).threadSleep(TEN_SECOND);
+            verify(threadConfig, times(ONE_MINUTE_COUNT_BY_SEC)).sleepThread(TEN_SECOND);
             verify(centralProcessor, times(ONE_MINUTE_COUNT_BY_SEC)).getSystemCpuLoadTicks();
             verify(centralProcessor, times(ONE_MINUTE_COUNT_BY_SEC)).getSystemCpuLoadBetweenTicks(startTicks);
             verify(formatterConfig, times(ONE_MINUTE_COUNT_BY_SEC)).changeDecimalFormatCpuUsage(anyDouble());
@@ -150,11 +154,11 @@ public class DefaultCpuMonitoringManageServiceTest {
         @Test
         @DisplayName("분 단위 CPU 사용량 저장 실패 - InterruptedException 발생 ")
         void successCollectCpuUsageRateByMinuteData() throws Exception {
-            doThrow(new InterruptedException()).when(cpuMonitoringManageService).threadSleep(TEN_SECOND);
+            doThrow(new InterruptedException()).when(threadConfig).sleepThread(TEN_SECOND);
 
             InterruptedException exception = assertThrows(InterruptedException.class, () -> {
-                cpuMonitoringManageService.threadSleep(TEN_SECOND);
-            },NOT_MATCH_EXCEPTION);
+                threadConfig.sleepThread(TEN_SECOND);
+            }, NOT_MATCH_EXCEPTION);
 
             assertEquals(InterruptedException.class, exception.getClass(), NOT_MATCH_EXCEPTION);
         }
@@ -233,7 +237,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringManageService.saveAverageCpuUsageByHour();
-            },NOT_MATCH_EXCEPTION);
+            }, NOT_MATCH_EXCEPTION);
 
             commonVerify();
             assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage());
@@ -262,7 +266,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringManageService.saveOneHourCpuUsageStatsToDb(cpuUsageStat);
-            },NOT_MATCH_EXCEPTION);
+            }, NOT_MATCH_EXCEPTION);
 
             verify(cpuUsageRateByHourRepository).save(cpuUsageStat);
             assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), NOT_MATCH_EXCEPTION_MESSAGE);
@@ -398,7 +402,7 @@ public class DefaultCpuMonitoringManageServiceTest {
         @Test
         @DisplayName("성공")
         void successSoftDeleteStatsByMinute() {
-            long tempSoftDeleteResult = 60L;
+            int tempSoftDeleteResult = 60;
             when(cpuUsageRateByMinuteRepository.softDeleteOldData(pastDay)).thenReturn(tempSoftDeleteResult);
 
             cpuMonitoringManageService.softDeleteStatsByMinute();
@@ -414,8 +418,8 @@ public class DefaultCpuMonitoringManageServiceTest {
             }).when(cpuUsageRateByMinuteRepository).softDeleteOldData(pastDay);
 
             DataAccessException exception = assertThrows(DataAccessException.class, () -> {
-                cpuMonitoringManageService.softDeleteStatsByMinute();
-            },NOT_MATCH_EXCEPTION);
+                cpuMonitoringManageService.softDeleteAndBackupCpuUsageStatsByMinute();
+            }, NOT_MATCH_EXCEPTION);
 
             commonVerify();
             assertEquals(RELATED_DB_EXCEPTION, exception.getMessage(), NOT_MATCH_EXCEPTION_MESSAGE);
@@ -431,13 +435,12 @@ public class DefaultCpuMonitoringManageServiceTest {
         @DisplayName("성공")
         void successBackupCpuUsageStatsByMinute() {
             List<CpuUsageRateByMinute> oldData = Arrays.asList(new CpuUsageRateByMinute(), new CpuUsageRateByMinute());
-
             when(cpuUsageRateByMinuteRepository.findByFlag(DELETE_FLAG)).thenReturn(oldData);
-            Future<Void> result = cpuMonitoringManageService.backupCpuUsageStatsByMinute();
+
+            cpuMonitoringManageService.backupCpuUsageStatsByMinute();
 
             verify(cpuUsageRateByMinuteRepository).findByFlag(DELETE_FLAG);
             verify(cpuMonitoringBackupService).backupCpuUsageStatsByMinute(oldData);
-            assertTrue(result.isDone());
         }
 
         @Test
@@ -449,7 +452,7 @@ public class DefaultCpuMonitoringManageServiceTest {
             ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringManageService.backupCpuUsageStatsByMinute();
 
-            },NOT_MATCH_EXCEPTION);
+            }, NOT_MATCH_EXCEPTION);
 
             verify(cpuUsageRateByMinuteRepository).findByFlag(DELETE_FLAG);
             verify(cpuMonitoringBackupService, never()).backupCpuUsageStatsByMinute(empty);
@@ -480,7 +483,7 @@ public class DefaultCpuMonitoringManageServiceTest {
         @Test
         @DisplayName("성공")
         void successSoftDeleteCpuUsageStatsByHourTest() throws Exception {
-            long tempSoftDeleteResult = 24L;
+            int tempSoftDeleteResult = 24;
             when(cpuUsageRateByHourRepository.softDeleteOldData(pastDay)).thenReturn(tempSoftDeleteResult);
 
             cpuMonitoringManageService.softDeleteStatsByHour();
@@ -498,7 +501,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             DataAccessException exception = assertThrows(DataAccessException.class, () -> {
                 cpuMonitoringManageService.softDeleteStatsByHour();
-            },NOT_MATCH_EXCEPTION);
+            }, NOT_MATCH_EXCEPTION);
 
             commonVerify();
             verify(cpuUsageRateByHourRepository).softDeleteOldData(pastDay);
@@ -517,11 +520,10 @@ public class DefaultCpuMonitoringManageServiceTest {
             List<CpuUsageRateByHour> oldData = Arrays.asList(new CpuUsageRateByHour(), new CpuUsageRateByHour());
             when(cpuUsageRateByHourRepository.findByFlag(DELETE_FLAG)).thenReturn(oldData);
 
-            Future<Void> result = cpuMonitoringManageService.backupCpuUsageStatsByHour();
+            cpuMonitoringManageService.backupCpuUsageStatsByHour();
 
             verify(cpuUsageRateByHourRepository).findByFlag(DELETE_FLAG);
             verify(cpuMonitoringBackupService).backupCpuUsageStatsByHour(oldData);
-            assertTrue(result.isDone());
         }
 
         @Test
@@ -532,7 +534,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringManageService.backupCpuUsageStatsByHour();
-            },NOT_MATCH_EXCEPTION);
+            }, NOT_MATCH_EXCEPTION);
 
             verify(cpuUsageRateByHourRepository).findByFlag(DELETE_FLAG);
             verify(cpuMonitoringBackupService, never()).backupCpuUsageStatsByHour(empty);
@@ -563,9 +565,9 @@ public class DefaultCpuMonitoringManageServiceTest {
         @Test
         @DisplayName("성공")
         void successSoftDeleteCpuUsageStatsByDayTest() throws Exception {
-            long tempSoftDeleteResult = 30L;
+            int tempSoftDeleteResult = 30;
 
-            when(cpuUsageRateByDayRepository.softDeleteOldData(pastDay)).thenReturn(30L); // 30 or 31
+            when(cpuUsageRateByDayRepository.softDeleteOldData(pastDay)).thenReturn(30); // 30 or 31
             cpuMonitoringManageService.softDeleteStatsByDay();
 
             verify(cpuUsageRateByDayRepository).softDeleteOldData(pastDay);
@@ -581,7 +583,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             DataAccessException exception = assertThrows(DataAccessException.class, () -> {
                 cpuMonitoringManageService.softDeleteStatsByDay();
-            },NOT_MATCH_EXCEPTION);
+            }, NOT_MATCH_EXCEPTION);
 
             commonVerify();
             verify(cpuUsageRateByDayRepository).softDeleteOldData(pastDay);
@@ -605,11 +607,10 @@ public class DefaultCpuMonitoringManageServiceTest {
             List<CpuUsageRateByDay> oldData = Arrays.asList(new CpuUsageRateByDay(), new CpuUsageRateByDay());
             when(cpuUsageRateByDayRepository.findByFlag(DELETE_FLAG)).thenReturn(oldData);
 
-            Future<Void> result = cpuMonitoringManageService.backupCpuUsageStatsByDay();
+            cpuMonitoringManageService.backupCpuUsageStatsByDay();
 
             commonVerify();
             verify(cpuMonitoringBackupService).backupCpuUsageStatsByDay(oldData);
-            assertTrue(result.isDone());
         }
 
         @Test
@@ -620,7 +621,7 @@ public class DefaultCpuMonitoringManageServiceTest {
 
             ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
                 cpuMonitoringManageService.backupCpuUsageStatsByDay();
-            },NOT_MATCH_EXCEPTION);
+            }, NOT_MATCH_EXCEPTION);
 
             commonVerify();
             verify(cpuMonitoringBackupService, never()).backupCpuUsageStatsByDay(empty);

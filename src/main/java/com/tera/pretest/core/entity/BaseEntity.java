@@ -45,6 +45,8 @@ public class BaseEntity {
             flag = "N";
         if(this.createTime == null)
             createTime= TimeProviderListener.getCurrentZonedDateTime();
+        if(this.updateTime == null)
+            updateTime = TimeProviderListener.getCurrentZonedDateTime();
     }
 
 }

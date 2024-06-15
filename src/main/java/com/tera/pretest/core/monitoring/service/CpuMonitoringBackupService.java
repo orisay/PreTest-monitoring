@@ -17,11 +17,13 @@ import com.tera.pretest.core.exception.process.ProcessCustomException;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.concurrent.Future;
 
 import static com.tera.pretest.core.contant.MonitoringConstant.DELETE_FLAG;
 import static com.tera.pretest.core.exception.process.ProcessCustomExceptionCode.NOT_FOUND_DATA;
@@ -40,27 +42,37 @@ public class CpuMonitoringBackupService {
     private final BuildFactory buildFactory;
 
 
-    public void backupCpuUsageStatsByMinute(List<CpuUsageRateByMinute> oldData){
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Future<Void> backupCpuUsageStatsByMinute(List<CpuUsageRateByMinute> oldData){
+        log.info("backupCpuUsageStatsByMinute oldData : {}",oldData);
         List<CpuUsageRateByMinuteBackup> backupData = buildFactory.toBackupDataByMinuteStats(oldData);
+        log.info("backupCpuUsageStatsByMinute backupData : {}",backupData);
         if(backupData.isEmpty())
             throw new ProcessCustomException(NOT_FOUND_DATA);
         cpuUsageRateByMinuteBackupRepository.saveAll(backupData);
+        return AsyncResult.forValue(null);
     }
 
 
-    public void backupCpuUsageStatsByHour(List<CpuUsageRateByHour> oldData){
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Future<Void> backupCpuUsageStatsByHour(List<CpuUsageRateByHour> oldData){
         List<CpuUsageRateByHourBackup> backupData = buildFactory.toBackupDataByHourStats(oldData);
         if(backupData.isEmpty())
             throw new ProcessCustomException(NOT_FOUND_DATA);
         cpuUsageRateByHourBackupRepository.saveAll(backupData);
-
+        return AsyncResult.forValue(null);
     }
 
-    public void backupCpuUsageStatsByDay(List<CpuUsageRateByDay> oldData){
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Future<Void> backupCpuUsageStatsByDay(List<CpuUsageRateByDay> oldData){
         List<CpuUsageRateByDayBackup> backupData = buildFactory.toBackupDataByDayStats(oldData);
         if(backupData.isEmpty())
             throw new ProcessCustomException(NOT_FOUND_DATA);
         cpuUsageRateByDayBackupRepository.saveAll(backupData);
+        return AsyncResult.forValue(null);
 
     }
 

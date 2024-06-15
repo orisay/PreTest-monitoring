@@ -68,11 +68,12 @@ public class MinuteStatDataBufferManager {
         return insertData;
     }
 
-    @Async("daemonThreadForAsync")
     @Retryable(value = {DataAccessException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void insertCpuUsageRateByMinuteData(List<CpuUsageRateByMinute> insertData) {
-        cpuUsageRateByMinuteRepository.saveAll(insertData);
+        log.info("Calling insertCpuUsageRateByMinuteData insertData:{}", insertData);
+        List<CpuUsageRateByMinute> saveData = cpuUsageRateByMinuteRepository.saveAll(insertData);
+        log.info("Calling insertCpuUsageRateByMinuteData saveData:{}", saveData);
     }
 
 

@@ -16,7 +16,7 @@ public interface CpuUsageRateByHourRepository extends JpaRepository<CpuUsageRate
 
     @Modifying
     @Query("UPDATE CpuUsageRateByHour stats SET stats.flag = 'Y' WHERE stats.createTime < :pastDay")
-    long softDeleteOldData(@Param("pastDay") ZonedDateTime pastDay);
+    int softDeleteOldData(@Param("pastDay") ZonedDateTime pastDay);
 
     List<CpuUsageRateByHour> findByFlag(String flag);
 

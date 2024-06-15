@@ -7,12 +7,14 @@ import com.tera.pretest.context.cpumonitoring.factory.BuildFactory;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
+import com.tera.pretest.core.config.DefaultThreadConfig;
 import com.tera.pretest.core.config.FormatterConfig;
 import com.tera.pretest.core.exception.process.ProcessCustomException;
 import com.tera.pretest.core.manager.MinuteStatDataBufferManager;
 import com.tera.pretest.core.monitoring.service.interfaces.CpuMonitoringManageService;
 import com.tera.pretest.core.util.ProviderDateUtil;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -57,16 +59,15 @@ public class DefaultCpuMonitoringManageService implements CpuMonitoringManageSer
 
     private ProviderDateUtil dateUtil;
 
+    private  DefaultThreadConfig threadConfig;
+
+
+
     @Override
     public void saveMonitoringCpuUsage() {
         Double averageCpuUsage = getAverageCpuUsageByOneMinute();
         CpuUsageRateByMinute insertData = buildFactory.toBuildByCpuUsageRateByMinute(averageCpuUsage);
         minuteStatDataBufferManager.collectCpuUsageRateByMinuteData(insertData);
-    }
-
-    @Override
-    public void threadSleep(long second) throws InterruptedException {
-        TimeUnit.SECONDS.sleep(second);
     }
 
     private Double getAverageCpuUsageByOneMinute() {
@@ -77,7 +78,7 @@ public class DefaultCpuMonitoringManageService implements CpuMonitoringManageSer
     private Double getServerTotalCpuUsageByTenSecond() {
         long[] startTicks = centralProcessor.getSystemCpuLoadTicks();
         try {
-            threadSleep(TEN_SECOND);
+            threadConfig.sleepThread(TEN_SECOND);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             log.error(" InterruptedException 발생", exception);
@@ -153,14 +154,16 @@ public class DefaultCpuMonitoringManageService implements CpuMonitoringManageSer
         return AsyncResult.forValue(null);
     }
 
+    @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
+    @Transactional
     @Override
     public void softDeleteAndBackupCpuUsageStatsByMinute() {
         softDeleteStatsByMinute();
         backupCpuUsageStatsByMinute();
     }
 
-    @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+
+    @Transactional
     @Override
     public void softDeleteStatsByMinute() {
         ZonedDateTime pastDay = dateUtil.getSearchDay(ONE_WEEK);
@@ -168,26 +171,26 @@ public class DefaultCpuMonitoringManageService implements CpuMonitoringManageSer
         log.debug("DB Side Effect raw:{}", softDeleteEffectDbRaw);
     }
 
-    @Async
-    @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     @Override
-    public Future<Void> backupCpuUsageStatsByMinute() {
+    public void backupCpuUsageStatsByMinute() {
         List<CpuUsageRateByMinute> oldData = cpuUsageRateByMinuteRepository.findByFlag(DELETE_FLAG);
+        log.info("backupCpuUsageStatsByMinute List<CpuUsageRateByMinute> oldData: {}",oldData);
         if (oldData.isEmpty())
             throw new ProcessCustomException(NOT_FOUND_DATA);
         cpuMonitoringBackupService.backupCpuUsageStatsByMinute(oldData);
-        return AsyncResult.forValue(null);
     }
 
+    @Transactional
+    @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Override
     public void softDeleteAndBackupOutdatedCpuUsageStatsByHour() {
         softDeleteStatsByHour();
         backupCpuUsageStatsByHour();
     }
 
-    @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+
+    @Transactional
     @Override
     public void softDeleteStatsByHour() {
         ZonedDateTime pastDay = dateUtil.getSearchMonth(THREE_MONTH);
@@ -195,27 +198,27 @@ public class DefaultCpuMonitoringManageService implements CpuMonitoringManageSer
         log.debug("DB Side Effect raw:{}", softDeleteEffectDbRaw);
     }
 
-    @Async
-    @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     @Override
-    public Future<Void> backupCpuUsageStatsByHour() {
+    public void backupCpuUsageStatsByHour() {
         List<CpuUsageRateByHour> oldData = cpuUsageRateByHourRepository.findByFlag(DELETE_FLAG);
+
         if (oldData.isEmpty()) {
             throw new ProcessCustomException(NOT_FOUND_DATA);
         }
         cpuMonitoringBackupService.backupCpuUsageStatsByHour(oldData);
-        return AsyncResult.forValue(null);
     }
 
+    @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
+    @Transactional
     @Override
     public void softDeleteAndBackupOutdatedCpuUsageStatsByDay() {
         softDeleteStatsByDay();
         backupCpuUsageStatsByDay();
     }
 
-    @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+
+    @Transactional
     @Override
     public void softDeleteStatsByDay() {
         ZonedDateTime pastDay = dateUtil.getSearchYear(ONE_YEAR);
@@ -223,17 +226,14 @@ public class DefaultCpuMonitoringManageService implements CpuMonitoringManageSer
         log.debug("DB Side Effect raw:{}", softDeleteEffectDbRaw);
     }
 
-    @Async
-    @Retryable(value = {ProcessCustomException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     @Override
-    public Future<Void> backupCpuUsageStatsByDay() {
+    public void backupCpuUsageStatsByDay() {
         List<CpuUsageRateByDay> oldData = cpuUsageRateByDayRepository.findByFlag(DELETE_FLAG);
         if (oldData.isEmpty()) {
             throw new ProcessCustomException(NOT_FOUND_DATA);
         }
         cpuMonitoringBackupService.backupCpuUsageStatsByDay(oldData);
-        return AsyncResult.forValue(null);
     }
 
     @Override

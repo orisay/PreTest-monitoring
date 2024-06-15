@@ -46,10 +46,8 @@ import static org.springframework.test.util.AssertionErrors.assertFalse;
  *Method coverage 100%
  * */
 @Log4j2
-@DisplayName("CpuMonitoringService Test")
-@ActiveProfiles("test")
+@DisplayName("CpuMonitoringService Tests")
 @ExtendWith(MockitoExtension.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Import({ZonedDateTimeFormatConfig.class, CpuMonitoringService.class})
 public class CpuMonitoringServiceTest {
     @Mock
@@ -81,7 +79,7 @@ public class CpuMonitoringServiceTest {
         formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     }
 
-    @AfterAll
+    @AfterEach
     public void shutUp() {
         shutdownManager.shutdown();
     }
@@ -160,8 +158,8 @@ public class CpuMonitoringServiceTest {
 
 
             when(mockRequest.getStartDay()).thenReturn(startDay);
-            when(dateUtil.truncateZonedDateTimeToDay(any(ZonedDateTime.class))).thenReturn(startDay);
-            when(dateUtil.addOneDayByInputDay(eq(startDay))).thenReturn(endDay);
+            when(dateUtil.truncateZonedDateTimeToDay(eq(startDay))).thenReturn(startDay);
+            when(dateUtil.addOneDay(eq(startDay))).thenReturn(endDay);
             when(cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay))
                     .thenReturn(Collections.singletonList(new CpuUsageRateByHour()));
 
@@ -169,11 +167,12 @@ public class CpuMonitoringServiceTest {
 
             verify(mockRequest).getStartDay();
             verify(dateUtil).truncateZonedDateTimeToDay(any(ZonedDateTime.class));
-            verify(dateUtil).addOneDayByInputDay(eq(startDay));
+            verify(dateUtil).addOneDay(eq(startDay));
             verify(cpuUsageRateByHourRepository).findByCreateTimeBetween(startDay, endDay);
             assertFalse("빈 객체 반환", result.getStatsUsage().isEmpty());
 
         }
+
 
         @Test
         @DisplayName("시 단위 CPU 사용률 조회 - 조건문")
@@ -187,7 +186,7 @@ public class CpuMonitoringServiceTest {
 
             when(mockRequest.getStartDay()).thenReturn(startDay);
             when(dateUtil.truncateZonedDateTimeToDay(eq(startDay))).thenReturn(startDay);
-            when(dateUtil.addOneDayByInputDay(eq(startDay))).thenReturn(endDay);
+            when(dateUtil.addOneDay(eq(startDay))).thenReturn(endDay);
             when(cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay))
                     .thenReturn(Collections.emptyList());
             assertThrows(CustomException.class, () -> {
@@ -196,7 +195,7 @@ public class CpuMonitoringServiceTest {
 
             verify(mockRequest).getStartDay();
             verify(dateUtil).truncateZonedDateTimeToDay(any(ZonedDateTime.class));
-            verify(dateUtil).addOneDayByInputDay(eq(startDay));
+            verify(dateUtil).addOneDay(eq(startDay));
             verify(cpuUsageRateByHourRepository).findByCreateTimeBetween(startDay, endDay);
 
 

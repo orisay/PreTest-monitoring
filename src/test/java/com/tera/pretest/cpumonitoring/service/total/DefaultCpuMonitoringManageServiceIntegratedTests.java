@@ -1,6 +1,7 @@
 package com.tera.pretest.cpumonitoring.service.total;
 
 import com.tera.pretest.config.IntegratedTestConfig;
+import com.tera.pretest.context.cpumonitoring.entity.backup.CpuUsageRateByMinuteBackup;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByDay;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByHour;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
@@ -12,6 +13,7 @@ import com.tera.pretest.core.config.FormatterConfig;
 import com.tera.pretest.core.exception.process.ProcessCustomException;
 import com.tera.pretest.core.manager.MinuteStatDataBufferManager;
 import com.tera.pretest.core.monitoring.service.CpuMonitoringBackupService;
+import com.tera.pretest.core.monitoring.service.DefaultCpuMonitoringManageService;
 import com.tera.pretest.core.monitoring.service.interfaces.CpuMonitoringManageService;
 import com.tera.pretest.core.util.ProviderDateUtil;
 import com.tera.pretest.core.util.TimeProvider;
@@ -34,9 +36,13 @@ import javax.persistence.PersistenceContext;
 import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
+import java.util.concurrent.Future;
 
+import static com.tera.pretest.core.contant.MonitoringConstant.*;
 import static com.tera.pretest.core.exception.process.ProcessCustomExceptionCode.NOT_FOUND_DATA;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -50,6 +56,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DisplayName("ManageServiceTests")
 public class DefaultCpuMonitoringManageServiceIntegratedTests {
 
+    private DefaultCpuMonitoringManageService cpuMonitoringManageService;
+
     private final CentralProcessor centralProcessor;
 
     private final CpuUsageRateByMinuteRepository cpuUsageRateByMinuteRepository;
@@ -58,7 +66,6 @@ public class DefaultCpuMonitoringManageServiceIntegratedTests {
 
     private final CpuUsageRateByDayRepository cpuUsageRateByDayRepository;
 
-    private final CpuMonitoringManageService cpuMonitoringManageService;
 
     private final CpuMonitoringBackupService cpuMonitoringBackupService;
 
@@ -93,12 +100,13 @@ public class DefaultCpuMonitoringManageServiceIntegratedTests {
 
     private DateTimeFormatter dateTimeFormatter;
 
+
     @Autowired
     public DefaultCpuMonitoringManageServiceIntegratedTests(CentralProcessor centralProcessor
             , CpuUsageRateByMinuteRepository cpuUsageRateByMinuteRepository
             , CpuUsageRateByHourRepository cpuUsageRateByHourRepository
             , CpuUsageRateByDayRepository cpuUsageRateByDayRepository
-            , CpuMonitoringManageService cpuMonitoringManageService
+            , DefaultCpuMonitoringManageService cpuMonitoringManageService
             , CpuMonitoringBackupService cpuMonitoringBackupService
             , MinuteStatDataBufferManager minuteStatDataBufferManager
             , BuildFactory buildFactory, FormatterConfig formatterConfig
@@ -136,7 +144,6 @@ public class DefaultCpuMonitoringManageServiceIntegratedTests {
         entityManager.close();
     }
 
-    //TODO 저장 - 데이터 조회 성공(주입 값 일치) and 실패(예외 처리) 데이터 저장 성공 총 4개 // 분 당 데이터 저장 제일 나중에
 
     @DisplayName("분 단위 데이터 저장")
     @Nested
@@ -150,8 +157,23 @@ public class DefaultCpuMonitoringManageServiceIntegratedTests {
         public void shutUp() {
             log.debug("Calling shutUp");
         }
+        @Test
+        @DisplayName("stat 진행 과정-결과 검사")
+        public void saveCpuUsageStats() {
+            CpuUsageRateByMinute tempData = new CpuUsageRateByMinute();
+            int tempQueSize = 0;
+            tempData.setUsageRate(50.00);
+            while (tempQueSize < LIMIT_DATA_COUNT+1) {
+                minuteStatDataBufferManager.collectCpuUsageRateByMinuteData(tempData);
+                log.info("Calling saveCpuUsageStats:{}", tempQueSize);
+                tempQueSize++;
+            }
+            List<CpuUsageRateByMinute> resultData = cpuUsageRateByMinuteRepository.findByFlag("N");
+            assertThat(resultData.get(0).getUsageRate()).isNotNull().isEqualTo(tempData.getUsageRate());
+        }
 
     }
+
 
     @DisplayName("시 단위 데이터 저장")
     @Nested
@@ -189,10 +211,6 @@ public class DefaultCpuMonitoringManageServiceIntegratedTests {
             hourSetupHelper.saveOneHourCpuUsageStatsToDb(cpuUsageRateByHour);
         }
 
-        @AfterEach
-        public void shutUp() {
-        }
-
         @Test
         @DisplayName("분 단위 데이터 조회")
         @Transactional(readOnly = true)
@@ -203,7 +221,6 @@ public class DefaultCpuMonitoringManageServiceIntegratedTests {
 
         @Test
         @DisplayName("분 단위 데이터 조회 - 빈 값 ")
-        @Transactional
         public void findForSaveDbDataIsEmpty() {
             cpuUsageRateByMinuteRepository.deleteAll();
             assertThrows(ProcessCustomException.class, () -> {
@@ -230,11 +247,9 @@ public class DefaultCpuMonitoringManageServiceIntegratedTests {
         @Test
         @DisplayName("시 단위 데이터 저장 및 조회 검증 - 동기 처리")
         public void saveCpuUsageStats() {
-            cpuUsageRateByHourRepository.deleteAll();
-
             CpuUsageRateByHour cpuUsageStat = checkCpuUsageRateByHour;
             log.info("saveCpuUsageStats cpuUsageStatValue:{}", cpuUsageStat);
-            CpuUsageRateByHour resultData = cpuUsageRateByHourRepository.save(checkCpuUsageRateByHour);
+            CpuUsageRateByHour resultData = cpuUsageRateByHourRepository.save(cpuUsageStat);
             CpuUsageRateByHour searchData =
                     cpuUsageRateByHourRepository.findByCpuRateByHourSeq(resultData.getCpuRateByHourSeq());
             log.info("saveCpuUsageStats resultData:{}", resultData);
@@ -264,28 +279,25 @@ public class DefaultCpuMonitoringManageServiceIntegratedTests {
             log.info("Calling setup");
             hourSetupHelper.setup();
             hourSetupHelper.setNotNullFlag();
-            log.info("setup before hourSetupHelper.saveDbData()");
             hourSetupHelper.saveDbData();
-            log.info("setup after hourSetupHelper.saveDbData()");
             daySetupHelper.setup();
             daySetupHelper.requestTempData();
             setupDate();
             setUpDbData();
             entityManager.flush();
-            //
-
 
         }
+
         public void setupDate() {
             startDay = daySetupHelper.getStartDay();
             endDay = daySetupHelper.getEndDay();
-            log.info("setupDate startDay:{}",startDay);
-            log.info("setupDate endDay:{}",endDay);
+            log.info("setupDate startDay:{}", startDay);
+            log.info("setupDate endDay:{}", endDay);
         }
 
         public void setUpDbData() {
             cpuUsageAverageStats = cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay);
-            log.info("setUpDbData cpuUsageAverageStatsValue:{} ",cpuUsageAverageStats);
+            log.info("setUpDbData cpuUsageAverageStatsValue:{} ", cpuUsageAverageStats);
             checkCpuAverageStats = hourSetupHelper.getCpuAverageStats(); //stream Arrays.asList()
 
             streamCheck = daySetupHelper.setInsertStat(checkCpuAverageStats);
@@ -296,19 +308,20 @@ public class DefaultCpuMonitoringManageServiceIntegratedTests {
         public void shutUp() {
             log.info("Calling shutUp");
         }
+
         @Test
         @DisplayName("시 단위 데이터 조회")
         @Transactional(readOnly = true)
         public void findForSaveDbData() {
-            log.info("checkCpuAverageStatsValue:{}",checkCpuAverageStats);
-            log.info("cpuUsageAverageStatsValue:{}",cpuUsageAverageStats);
+            log.info("checkCpuAverageStatsValue:{}", checkCpuAverageStats);
+            log.info("cpuUsageAverageStatsValue:{}", cpuUsageAverageStats);
 
             assertThat(checkCpuAverageStats).isNotEmpty().usingRecursiveComparison()
                     .ignoringFields("createTime", "updateTime", "timeZoneAt", "flag").isEqualTo(cpuUsageAverageStats);
         }
+
         @Test
         @DisplayName("시 단위 데이터 조회 - 빈 값 ")
-        @Transactional
         public void findForSaveDbDataIsEmpty() {
             cpuUsageRateByHourRepository.deleteAll();
             assertThrows(ProcessCustomException.class, () -> {
@@ -316,6 +329,7 @@ public class DefaultCpuMonitoringManageServiceIntegratedTests {
             });
 
         }
+
         @Test
         @DisplayName("스트림 결과 체크")
         public void doubleSummaryStatisticsAverageResult() {
@@ -333,62 +347,212 @@ public class DefaultCpuMonitoringManageServiceIntegratedTests {
         }
 
 
-        //TODO  작업중
         @Test
         @DisplayName("시 단위 데이터 저장 및 조회 검증 - 동기 처리")
         public void saveCpuUsageStats() {
-//            log.info("saveCpuUsageStats cpuUsageRateByDay value:{}",cpuUsageRateByDay);
-//            log.info("saveCpuUsageStats checkDataInHourRepo value:{}",checkDataInHourRepo);
-//            log.info("saveCpuUsageStats checkCpuAverageStats value:{}", checkCpuAverageStats);
-//            log.info("saveCpuUsageStats  cpuUsageAverageStats value:{}", cpuUsageAverageStats);
-//            log.info("saveCpuUsageStats streamCheck value:{}",streamCheck);
+            CpuUsageRateByDay cpuUsageStat = streamCheck;
+            log.info("saveCpuUsageStats cpuUsageStatValue:{}", cpuUsageStat);
+            CpuUsageRateByDay resultData = cpuUsageRateByDayRepository.save(cpuUsageStat);
+            log.info("saveCpuUsageStats resultData:{}", resultData);
+            log.info("saveCpuUsageStats resultData.seq:{}", resultData.getCpuRateByDaySeq());
+            CpuUsageRateByDay searchData =
+                    cpuUsageRateByDayRepository.findByCpuRateByDaySeq(resultData.getCpuRateByDaySeq());
+            log.info("saveCpuUsageStats searchData:{}", searchData);
+
+            assertThat(resultData).isNotNull().usingRecursiveComparison()
+                    .ignoringFields("createTime", "timeZoneAt", "updateTime").isEqualTo(searchData);
 
         }
 
-
     }
 
-    //TODO 소프트 딜리트 업데이트 성공(빈 값 검사 ,값 주입 검사) 예외처리 / 소프트 딜리트된 데이터 조회 (성공, 빈값) 앞에서 값 주입 검사했으니 pass 예외처리 총 6개
 
-    @DisplayName("분 당 데이터 소프트 딜리트")
+    @DisplayName("분 단위 데이터 소프트 딜리트&&백업 데이터 조회")
     @Nested
     class softDeleteAndBackupCpuUsageStatsByMinuteTests {
+        private List<CpuUsageRateByMinute> oldData;
+
+        private int softDeleteEffectDbRaw;
+
+        private ZonedDateTime pastDay;
+
         @BeforeEach
         public void setup() {
             log.debug("Calling setup");
+            minuteSetupHelper.setup();
+            minuteSetupHelper.setFlagForDeletionAndBackup();
+            minuteSetupHelper.saveDbData();
+            testDataSettingProcessForSoftDelete();
+            entityManager.flush();
+        }
+
+        public void testDataSettingProcessForSoftDelete() {
+            pastDay = dateUtil.getSearchDay(ONE_WEEK);
+            softDeleteEffectDbRaw = cpuUsageRateByMinuteRepository.softDeleteOldData(pastDay);
+            CpuUsageRateByMinute firstDbData = minuteSetupHelper.getFirstDbData();
+            CpuUsageRateByMinute secondDbData = minuteSetupHelper.getSecondDbData();
+            oldData = Arrays.asList(firstDbData, secondDbData);
         }
 
         @AfterEach
         public void shutUp() {
             log.debug("Calling shutUp");
         }
+
+        @Test
+        @DisplayName("소프트 딜리트 영향 확인")
+        public void softDeleteTestResultIsNotNull() {
+            assertThat(softDeleteEffectDbRaw).isNotEqualTo(0L);
+        }
+
+        @Test
+        @DisplayName("소프트 딜리트 업데이트 레코드 검사")
+        public void checkSoftDeleteDbEffectRecord() {
+            long expectedDeletedCount = 2L;
+            assertThat(softDeleteEffectDbRaw).isNotEqualTo(expectedDeletedCount);
+        }
+
+        @Test
+        @DisplayName("분 단위 백업 데이터 조회")
+        public void findBackupDataIsNotEmpty() {
+            assertThat(oldData).isNotEmpty();
+        }
+
+        @Test
+        @DisplayName("분 단위 백업 데이터 조회 - 빈 값")
+        public void findBackupDataIsEmpty() {
+            cpuUsageRateByMinuteRepository.deleteAll();
+            entityManager.flush();
+            Assertions.assertThrows(ProcessCustomException.class, () -> {
+                cpuMonitoringManageService.backupCpuUsageStatsByMinute();
+            });
+        }
     }
 
-    @DisplayName("시 당 데이터 소프트 딜리트")
+    @DisplayName("시 단위 데이터 소프트 딜리트&&백업 데이터 조회")
     @Nested
     class softDeleteAndBackupOutdatedCpuUsageStatsByHourTests {
+        private List<CpuUsageRateByHour> oldData;
+
+        private int softDeleteEffectDbRaw;
+
+        private ZonedDateTime pastDay;
+
         @BeforeEach
         public void setup() {
             log.debug("Calling setup");
+            hourSetupHelper.setup();
+            hourSetupHelper.setFlagForDeletionAndBackup();
+            hourSetupHelper.saveDbData();
+            testDataSettingProcessForSoftDelete();
+            entityManager.flush();
+        }
+
+        private void testDataSettingProcessForSoftDelete() {
+            pastDay = dateUtil.getSearchDay(THREE_MONTH);
+            softDeleteEffectDbRaw = cpuUsageRateByMinuteRepository.softDeleteOldData(pastDay);
+            CpuUsageRateByHour firstDbData = hourSetupHelper.getFirstDbData();
+            CpuUsageRateByHour secondDbData = hourSetupHelper.getSecondDbData();
+            oldData = Arrays.asList(firstDbData, secondDbData);
         }
 
         @AfterEach
         public void shutUp() {
             log.debug("Calling shutUp");
         }
+
+        @Test
+        @DisplayName("소프트 딜리트 영향 확인")
+        public void softDeleteTestResultIsNotNull() {
+            assertThat(softDeleteEffectDbRaw).isNotEqualTo(0L);
+        }
+
+        @Test
+        @DisplayName("소프트 딜리트 업데이트 레코드 검사")
+        public void checkSoftDeleteDbEffectRecord() {
+            long expectedDeletedCount = 2L;
+            assertThat(softDeleteEffectDbRaw).isNotEqualTo(expectedDeletedCount);
+        }
+
+        @Test
+        @DisplayName("시 단위 백업 데이터 조회")
+        public void findBackupDataIsNotEmpty() {
+            assertThat(oldData).isNotEmpty();
+        }
+
+        @Test
+        @DisplayName("시 단위 백업 데이터 조회 - 빈 값")
+        public void findBackupDataIsEmpty() {
+            cpuUsageRateByHourRepository.deleteAll();
+            entityManager.flush();
+            Assertions.assertThrows(ProcessCustomException.class, () -> {
+                cpuMonitoringManageService.backupCpuUsageStatsByHour();
+            });
+        }
+
     }
 
-    @DisplayName("일 당 데이터 소프트 딜리트")
+    @DisplayName("일 단위 데이터 소프트 딜리트&&백업 데이터 조회")
     @Nested
     class softDeleteAndBackupOutdatedCpuUsageStatsByDay {
+        private List<CpuUsageRateByDay> oldData;
+
+        private int softDeleteEffectDbRaw;
+
+        private ZonedDateTime pastDay;
+
         @BeforeEach
         public void setup() {
             log.debug("Calling setup");
+            daySetupHelper.setup();
+            daySetupHelper.setFlagForDeletionAndBackup();
+            daySetupHelper.saveDbData();
+            testDataSettingProcessForSoftDelete();
+            entityManager.flush();
         }
+
+        private void testDataSettingProcessForSoftDelete() {
+            pastDay = dateUtil.getSearchDay(ONE_YEAR);
+            softDeleteEffectDbRaw = cpuUsageRateByDayRepository.softDeleteOldData(pastDay);
+            CpuUsageRateByDay firstDbData = daySetupHelper.getFirstDbData();
+            CpuUsageRateByDay secondDbData = daySetupHelper.getSecondDbData();
+            oldData = Arrays.asList(firstDbData, secondDbData);
+        }
+
 
         @AfterEach
         public void shutUp() {
             log.debug("Calling shutUp");
         }
+
+        @Test
+        @DisplayName("소프트 딜리트 영향 확인")
+        public void softDeleteTestResultIsNotNull() {
+            assertThat(softDeleteEffectDbRaw).isNotEqualTo(0L);
+        }
+
+        @Test
+        @DisplayName("소프트 딜리트 업데이트 레코드 검사")
+        public void checkSoftDeleteDbEffectRecord() {
+            long expectedDeletedCount = 2L;
+            assertThat(softDeleteEffectDbRaw).isNotEqualTo(expectedDeletedCount);
+        }
+
+        @Test
+        @DisplayName("일 단위 백업 데이터 조회")
+        public void findBackupDataIsNotEmpty() {
+            assertThat(oldData).isNotEmpty();
+        }
+
+        @Test
+        @DisplayName("일 단위 백업 데이터 조회 - 빈 값")
+        public void findBackupDataIsEmpty() {
+            cpuUsageRateByDayRepository.deleteAll();
+            entityManager.flush();
+            Assertions.assertThrows(ProcessCustomException.class, () -> {
+                cpuMonitoringManageService.backupCpuUsageStatsByDay();
+            });
+        }
+
     }
 }

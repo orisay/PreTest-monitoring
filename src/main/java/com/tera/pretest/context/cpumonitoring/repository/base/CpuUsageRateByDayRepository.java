@@ -1,6 +1,7 @@
 package com.tera.pretest.context.cpumonitoring.repository.base;
 
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByDay;
+import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByHour;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,10 +17,13 @@ public interface CpuUsageRateByDayRepository extends JpaRepository<CpuUsageRateB
 
     @Modifying
     @Query("UPDATE CpuUsageRateByDay stats SET stats.flag = 'Y' WHERE stats.createTime < :pastDay")
-    long softDeleteOldData(@Param("pastDay") ZonedDateTime pastDay);
+    int softDeleteOldData(@Param("pastDay") ZonedDateTime pastDay);
 
     List<CpuUsageRateByDay> findByFlag(String flag);
 
     long deleteByFlag(String flag);
+
+    CpuUsageRateByDay findByCpuRateByDaySeq(long cpuRateByDaySeq);
+
 
 }

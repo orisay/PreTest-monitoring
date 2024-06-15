@@ -14,5 +14,5 @@ app:
 logging:
   level:
     root: INFO
-    com.tera.pretest: TRACE
+    com.tera.pretest: INFO
 

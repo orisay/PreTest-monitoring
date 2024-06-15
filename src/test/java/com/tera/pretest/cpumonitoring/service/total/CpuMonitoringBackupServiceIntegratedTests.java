@@ -32,14 +32,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.awt.event.FocusEvent;
 import java.time.Clock;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import static com.tera.pretest.core.contant.MonitoringConstant.DELETE_FLAG;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Log4j2
 @SpringBootTest
@@ -176,12 +180,20 @@ public class CpuMonitoringBackupServiceIntegratedTests {
         @Test
         @DisplayName("조건문 예외 처리 - backupData isEmpty")
         public void backupValueIsEmpty() {
-            log.info("Calling backupValueIsEmpty backupData init before Value:{}", oldData);
+            log.debug("Calling backupValueIsEmpty backupData init before Value:{}", oldData);
             oldData = Collections.emptyList();
-            log.info("Calling backupValueIsEmpty oldData init after Value:{}", oldData);
-            Assertions.assertThrows(ProcessCustomException.class, () -> {
-                cpuMonitoringBackupService.backupCpuUsageStatsByMinute(oldData);
-            }, "backupData 값이 존재하지 않습니다.");
+            log.debug("Calling backupValueIsEmpty oldData init after Value:{}", oldData);
+
+            Future<Void> result = cpuMonitoringBackupService.backupCpuUsageStatsByMinute(oldData);
+            ExecutionException exception = assertThrows(ExecutionException.class, () -> {
+                result.get();
+            });
+
+            Throwable cause = exception.getCause();
+            log.debug("exception.getClass :{}",cause.getClass());
+            log.info("Error message that occurred :{}", cause.getMessage());
+            assertThat(cause.getClass()).isEqualTo(ProcessCustomException.class);
+
         }
 
 
@@ -243,10 +255,19 @@ public class CpuMonitoringBackupServiceIntegratedTests {
         @Test
         @DisplayName("조건문 예외 처리 - backupData isEmpty")
         public void backupValueIsEmpty() {
+            log.debug("Calling backupValueIsEmpty backupData init before Value:{}", oldData);
             oldData = Collections.emptyList();
-            Assertions.assertThrows(ProcessCustomException.class, () -> {
-                cpuMonitoringBackupService.backupCpuUsageStatsByHour(oldData);
+            log.debug("Calling backupValueIsEmpty oldData init after Value:{}", oldData);
+
+            Future<Void> result = cpuMonitoringBackupService.backupCpuUsageStatsByHour(oldData);
+            ExecutionException exception = assertThrows(ExecutionException.class, () -> {
+                result.get();
             });
+
+            Throwable cause = exception.getCause();
+            log.debug("exception.getClass :{}",cause.getClass());
+            log.info("Error message that occurred :{}", cause.getMessage());
+            assertThat(cause.getClass()).isEqualTo(ProcessCustomException.class);
         }
 
     }
@@ -303,10 +324,19 @@ public class CpuMonitoringBackupServiceIntegratedTests {
         @Test
         @DisplayName("조건문 예외 처리 - backupData isEmpty")
         public void backupValueIsEmpty() {
+            log.debug("Calling backupValueIsEmpty backupData init before Value:{}", oldData);
             oldData = Collections.emptyList();
-            Assertions.assertThrows(ProcessCustomException.class, () -> {
-                cpuMonitoringBackupService.backupCpuUsageStatsByDay(oldData);
+            log.debug("Calling backupValueIsEmpty oldData init after Value:{}", oldData);
+
+            Future<Void> result = cpuMonitoringBackupService.backupCpuUsageStatsByDay(oldData);
+            ExecutionException exception = assertThrows(ExecutionException.class, () -> {
+                result.get();
             });
+
+            Throwable cause = exception.getCause();
+            log.debug("exception.getClass :{}",cause.getClass());
+            log.info("Error message that occurred :{}", cause.getMessage());
+            assertThat(cause.getClass()).isEqualTo(ProcessCustomException.class);
         }
 
     }

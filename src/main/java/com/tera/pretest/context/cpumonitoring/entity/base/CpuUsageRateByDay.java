@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
 
-
+@Schema(name = "CpuUsageRateByDay")
 @ToString(callSuper = true)
 @SuperBuilder
 @Setter
