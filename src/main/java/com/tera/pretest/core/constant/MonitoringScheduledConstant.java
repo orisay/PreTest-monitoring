@@ -1,4 +1,4 @@
-package com.tera.pretest.core.contant;
+package com.tera.pretest.core.constant;
 
 public final class MonitoringScheduledConstant {
 

@@ -7,9 +7,10 @@ import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
 
-
-@ToString
+@Schema(name = "CpuUsageRateByDay")
+@ToString(callSuper = true)
 @SuperBuilder
+@Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,7 +19,7 @@ import javax.persistence.*;
 public class CpuUsageRateByDay extends LogBaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "CPU_RATE_BY_DAY_SEQ", columnDefinition = "BIGINT")
     @Schema(description = "Sequence or Auto Increment", type = "Long")
     private Long cpuRateByDaySeq;

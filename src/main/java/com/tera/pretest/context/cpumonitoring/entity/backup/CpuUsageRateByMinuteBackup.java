@@ -1,7 +1,10 @@
 package com.tera.pretest.context.cpumonitoring.entity.backup;
 
 import com.tera.pretest.core.entity.LogBaseEntity;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Column;
