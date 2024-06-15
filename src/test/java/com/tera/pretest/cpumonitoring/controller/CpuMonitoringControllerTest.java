@@ -1,7 +1,6 @@
 package com.tera.pretest.cpumonitoring.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tera.pretest.config.UnitTestConfig;
 import com.tera.pretest.context.cpumonitoring.controller.CpuMonitoringController;
 import com.tera.pretest.context.cpumonitoring.dto.input.GetCpuUsageRateByDay;
 import com.tera.pretest.context.cpumonitoring.dto.input.GetCpuUsageRateByHour;
@@ -23,11 +22,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -40,12 +36,9 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ContextConfiguration(classes = UnitTestConfig.class)
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(CpuMonitoringController.class)
 public class CpuMonitoringControllerTest {
-    @Autowired
-    protected CpuMonitoringService cpuMonitoringService;
 
     @Autowired
     protected MockMvc mockMvc;
@@ -53,14 +46,14 @@ public class CpuMonitoringControllerTest {
     @Autowired
     protected ObjectMapper objectMapper;
 
-    @Autowired
+    @MockBean
+    protected CpuMonitoringService cpuMonitoringService;
+
+    @MockBean
     protected ProviderDateUtil dateUtil;
 
-
-    @Autowired
+    @MockBean
     protected ShutdownManager shutdownManager;
-
-
 
     @AfterEach
     public void shutUp(){

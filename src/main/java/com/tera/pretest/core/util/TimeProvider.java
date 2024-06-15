@@ -1,25 +1,23 @@
 package com.tera.pretest.core.util;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
+import java.time.Clock;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.tera.pretest.core.contant.MonitoringConstant.*;
+import static com.tera.pretest.core.constant.MonitoringConstant.*;
 
 @Log4j2
 @Component
 public class TimeProvider {
-
 
     private final AtomicReference<ZonedDateTime> currentZonedDateTimeAt = new AtomicReference<>();
 
@@ -27,29 +25,36 @@ public class TimeProvider {
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
+//    @Autowired
+    private Clock clock;
 
-    public TimeProvider() {
-        log.info("TimeProvider start Log");
-        log.info("TimeProvider second Log");
-        log.info("TimeProvider third Log");
+
+    @Autowired
+    public TimeProvider(Clock clock) {
+        this.clock = clock;
+        log.debug("Calling TimeProvider constructor");
+        updateTime();
         scheduledExecutorService.scheduleAtFixedRate(this::updateTime, 0, UPDATE_INTERVAL_TIME, TimeUnit.MINUTES);
     }
 
-
-
-
+    public void setClockFixedTime(Clock clock){
+        this.clock = clock;
+        updateTime();
+    }
 
     public void updateTime() {
-        ZonedDateTime nowZoneDateTime = ZonedDateTime.now(ZoneId.of(TIME_ZONE));
+        log.debug("Calling updateTime");
+        ZoneId zoneId = ZoneId.of(TIME_ZONE);
+        ZonedDateTime nowZoneDateTime = ZonedDateTime.now(clock.withZone(zoneId));
         Timestamp nowTimestamp = Timestamp.from(nowZoneDateTime.toInstant());
         currentZonedDateTimeAt.set(nowZoneDateTime);
         currentTimestampAt.set(nowTimestamp);
-        log.info("TimeProvider updateTime first Log nowZoneDateTime:{}", nowZoneDateTime);
+        log.debug("TimeProvider updateTime first Log nowZoneDateTime:{}", nowZoneDateTime);
     }
 
     public ZonedDateTime getCurrentZonedDateTimeAt() {
-        log.info("Test currentZonedDateTimeAt Start");
-        log.info("Test currentZonedDateTimeAt.get():{}", currentZonedDateTimeAt.get());
+        log.debug("Test currentZonedDateTimeAt Start");
+        log.debug("Test currentZonedDateTimeAt.get():{}", currentZonedDateTimeAt.get());
         return currentZonedDateTimeAt.get();
     }
 
@@ -79,6 +84,5 @@ public class TimeProvider {
     private boolean awaitShutdown() throws InterruptedException {
         return scheduledExecutorService.awaitTermination(TEN_SECOND, TimeUnit.SECONDS);
     }
-
 
 }

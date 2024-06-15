@@ -29,13 +29,13 @@ import static com.tera.pretest.core.exception.restful.CustomExceptionCode.NOT_FO
 @Service
 public class CpuMonitoringService {
 
-    private CpuUsageRateByMinuteRepository cpuUsageRateByMinuteRepository;
+    private final CpuUsageRateByMinuteRepository cpuUsageRateByMinuteRepository;
 
-    private CpuUsageRateByHourRepository cpuUsageRateByHourRepository;
+    private final CpuUsageRateByHourRepository cpuUsageRateByHourRepository;
 
-    private CpuUsageRateByDayRepository cpuUsageRateByDayRepository;
+    private final CpuUsageRateByDayRepository cpuUsageRateByDayRepository;
 
-    private ProviderDateUtil dateUtil;
+    private final ProviderDateUtil dateUtil;
 
 
     @Transactional(readOnly = true)
@@ -53,7 +53,7 @@ public class CpuMonitoringService {
     @Transactional(readOnly = true)
     public ResultCpuUsageRateByHour getCpuUsageRateByHour(GetCpuUsageRateByHour getCpuUsageRateByHour) {
         ZonedDateTime startDay = dateUtil.truncateZonedDateTimeToDay(getCpuUsageRateByHour.getStartDay());
-        ZonedDateTime endDay = dateUtil.addOneDayByInputDay(startDay);
+        ZonedDateTime endDay = dateUtil.addOneDay(startDay);
         List<CpuUsageRateByHour> statsData = cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay);
         if(statsData.isEmpty())
             throw new CustomException(NOT_FOUND_DATA);

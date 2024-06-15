@@ -7,7 +7,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.tera.pretest.core.contant.MonitoringConstant.*;
+import static com.tera.pretest.core.constant.MonitoringConstant.*;
 
 @Log4j2
 @Component
@@ -68,11 +67,12 @@ public class MinuteStatDataBufferManager {
         return insertData;
     }
 
-    @Async("daemonThreadForAsync")
     @Retryable(value = {DataAccessException.class}, maxAttempts = FINAL_RETRY, backoff = @Backoff(delay = RETRY_DELAY))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     protected void insertCpuUsageRateByMinuteData(List<CpuUsageRateByMinute> insertData) {
-        cpuUsageRateByMinuteRepository.saveAll(insertData);
+        log.info("Calling insertCpuUsageRateByMinuteData insertData:{}", insertData);
+        List<CpuUsageRateByMinute> saveData = cpuUsageRateByMinuteRepository.saveAll(insertData);
+        log.info("Calling insertCpuUsageRateByMinuteData saveData:{}", saveData);
     }
 
 

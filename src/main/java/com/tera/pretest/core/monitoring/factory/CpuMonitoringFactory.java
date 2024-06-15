@@ -3,7 +3,7 @@ package com.tera.pretest.core.monitoring.factory;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-import static com.tera.pretest.core.contant.MonitoringConstant.CPU_MONITORING_THREAD;
+import static com.tera.pretest.core.constant.MonitoringConstant.CPU_MONITORING_THREAD;
 
 public class CpuMonitoringFactory implements ThreadFactory {
 

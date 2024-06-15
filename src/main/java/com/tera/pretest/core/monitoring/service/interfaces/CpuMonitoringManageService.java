@@ -8,17 +8,34 @@ import java.util.concurrent.Future;
 public interface CpuMonitoringManageService {
     void saveMonitoringCpuUsage();
 
-    void threadSleep(long second) throws InterruptedException;
-
-    Future<Void>saveOneMinuteCpuUsageToDb();
+    Future<Void> saveOneMinuteCpuUsageToDb();
 
     void saveAverageCpuUsageByHour();
 
-    Future<Void>saveOneHourCpuUsageStatsToDb(CpuUsageRateByHour CpuUsageStat);
+    Future<Void> saveOneHourCpuUsageStatsToDb(CpuUsageRateByHour CpuUsageStat);
 
     void saveAverageCpuUsageByDay();
 
-    Future<Void>saveOneDayCpuUsageStatsToDb(CpuUsageRateByDay cpuUsageStat);
+    Future<Void> saveOneDayCpuUsageStatsToDb(CpuUsageRateByDay cpuUsageStat);
+
+    void softDeleteAndBackupCpuUsageStatsByMinute();
+
+    void softDeleteStatsByMinute();
+
+    void backupCpuUsageStatsByMinute();
+
+    void softDeleteAndBackupOutdatedCpuUsageStatsByHour();
+
+    void softDeleteStatsByHour();
+
+    void backupCpuUsageStatsByHour();
+
+    void softDeleteAndBackupOutdatedCpuUsageStatsByDay();
+
+    void softDeleteStatsByDay();
+
+    void backupCpuUsageStatsByDay();
+
 
 
 }
