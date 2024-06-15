@@ -14,7 +14,6 @@ import com.tera.pretest.core.manager.MinuteStatDataBufferManager;
 import com.tera.pretest.core.monitoring.service.interfaces.CpuMonitoringManageService;
 import com.tera.pretest.core.util.ProviderDateUtil;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -29,10 +28,9 @@ import java.time.ZonedDateTime;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.DoubleStream;
 
-import static com.tera.pretest.core.contant.MonitoringConstant.*;
+import static com.tera.pretest.core.constant.MonitoringConstant.*;
 import static com.tera.pretest.core.exception.process.ProcessCustomExceptionCode.NOT_FOUND_DATA;
 
 @Log4j2

@@ -1,6 +1,5 @@
 package com.tera.pretest.cpumonitoring.core.helper;
 
-import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByHour;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
 import com.tera.pretest.context.cpumonitoring.factory.BuildFactory;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
@@ -9,20 +8,16 @@ import com.tera.pretest.core.util.TimeProvider;
 import com.tera.pretest.core.util.interfaces.DateUtil;
 import com.tera.pretest.cpumonitoring.core.helper.interfaces.SetupForTestProcess;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.DoubleSummaryStatistics;
 import java.util.List;
 
-import static com.tera.pretest.core.contant.MonitoringConstant.DELETE_FLAG;
-import static com.tera.pretest.core.contant.MonitoringConstant.ONE_DAY;
+import static com.tera.pretest.core.constant.MonitoringConstant.DELETE_FLAG;
 
 @Log4j2
 @Transactional

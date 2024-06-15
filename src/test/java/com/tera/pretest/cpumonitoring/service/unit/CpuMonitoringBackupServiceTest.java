@@ -25,12 +25,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static com.tera.pretest.core.contant.MonitoringConstant.DELETE_FLAG;
+import static com.tera.pretest.core.constant.MonitoringConstant.DELETE_FLAG;
 import static com.tera.pretest.core.exception.process.ProcessCustomExceptionCode.NOT_FOUND_DATA;
+import static com.tera.pretest.cpumonitoring.core.constant.TestConstant.NOT_MATCH_EXCEPTION_MESSAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -76,11 +76,11 @@ public class CpuMonitoringBackupServiceTest {
 
     @Nested
     @DisplayName("분 단위 CPU 사용량 삭제")
-    class HardDeleteOutdatedCpuUsageStatsByMinuteTests{
+    class HardDeleteOutdatedCpuUsageStatsByMinuteTests {
 
         @Test
         @DisplayName("분 단위 CPU 사용량 삭제 성공")
-        void successHardDeleteOutdatedCpuUsageStatsByMinuteTest() throws Exception{
+        void successHardDeleteOutdatedCpuUsageStatsByMinuteTest() {
             when(cpuUsageRateByMinuteRepository.deleteByFlag(DELETE_FLAG)).thenReturn(5L);
             cpuMonitoringBackupService.hardDeleteOutdatedCpuUsageStatsByMinute();
             verify(cpuUsageRateByMinuteRepository).deleteByFlag(DELETE_FLAG);
@@ -90,10 +90,10 @@ public class CpuMonitoringBackupServiceTest {
 
     @Nested
     @DisplayName("시 단위 CPU 사용량 삭제")
-    class HardDeleteOutdatedCpuUsageStatsByHourTests{
+    class HardDeleteOutdatedCpuUsageStatsByHourTests {
         @Test
         @DisplayName("시 단위 CPU 사용량 삭제 성공")
-        void successHardDeleteOutdatedCpuUsageStatsByHourTest()throws Exception{
+        void successHardDeleteOutdatedCpuUsageStatsByHourTest() {
             when(cpuUsageRateByHourRepository.deleteByFlag(DELETE_FLAG)).thenReturn(5L);
             cpuMonitoringBackupService.hardDeleteOutdatedCpuUsageStatsByHour();
             verify(cpuUsageRateByHourRepository).deleteByFlag(DELETE_FLAG);
@@ -103,10 +103,10 @@ public class CpuMonitoringBackupServiceTest {
 
     @Nested
     @DisplayName("일 단위 CPU 사용량 삭제")
-    class HardDeleteOutdatedCpuUsageStatsByDayTests{
+    class HardDeleteOutdatedCpuUsageStatsByDayTests {
         @Test
         @DisplayName("일 단위 CPU 사용량 삭제 성공")
-        void successHardDeleteOutdatedCpuUsageStatsByDayTest()throws Exception{
+        void successHardDeleteOutdatedCpuUsageStatsByDayTest() {
             when(cpuUsageRateByDayRepository.deleteByFlag(DELETE_FLAG)).thenReturn(5L);
             cpuMonitoringBackupService.hardDeleteOutdatedCpuUsageStatsByDay();
             verify(cpuUsageRateByDayRepository).deleteByFlag(DELETE_FLAG);
@@ -119,9 +119,9 @@ public class CpuMonitoringBackupServiceTest {
 
         @Test
         @DisplayName("분 단위 CPU 사용량 백업")
-        void successBackupCpuUsageStatsByMinuteTest() throws Exception{
-            List<CpuUsageRateByMinute> oldData = Arrays.asList(new CpuUsageRateByMinute());
-            List<CpuUsageRateByMinuteBackup> backupData = Arrays.asList(new CpuUsageRateByMinuteBackup());
+        void successBackupCpuUsageStatsByMinuteTest() {
+            List<CpuUsageRateByMinute> oldData = List.of(new CpuUsageRateByMinute());
+            List<CpuUsageRateByMinuteBackup> backupData = List.of(new CpuUsageRateByMinuteBackup());
 
             when(buildFactory.toBackupDataByMinuteStats(oldData)).thenReturn(backupData);
             cpuMonitoringBackupService.backupCpuUsageStatsByMinute(oldData);
@@ -132,18 +132,19 @@ public class CpuMonitoringBackupServiceTest {
 
         @Test
         @DisplayName("분 단위 CPU 사용량 백업 - 예외 처리 체크")
-        void failBackupCpuUsageStatsByMinuteTest() throws Exception{
-            List<CpuUsageRateByMinute> oldData = Arrays.asList(new CpuUsageRateByMinute());
+        void failBackupCpuUsageStatsByMinuteTest() {
+            List<CpuUsageRateByMinute> oldData = List.of(new CpuUsageRateByMinute());
             List<CpuUsageRateByMinuteBackup> emptyBackupData = Collections.emptyList();
 
             when(buildFactory.toBackupDataByMinuteStats(oldData)).thenReturn(emptyBackupData);
 
-            ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
-                cpuMonitoringBackupService.backupCpuUsageStatsByMinute(oldData);
-            });
+            ProcessCustomException exception = assertThrows(ProcessCustomException.class,
+                    () -> cpuMonitoringBackupService.backupCpuUsageStatsByMinute(oldData));
 
-            assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), "예외 경우가 일치하지 않습니다.");
+
+            assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), NOT_MATCH_EXCEPTION_MESSAGE);
         }
+
     }
 
     @Nested
@@ -152,9 +153,9 @@ public class CpuMonitoringBackupServiceTest {
 
         @Test
         @DisplayName("시 단위 CPU 사용량 백업")
-        void successBackupCpuUsageStatsByHourTest() throws Exception{
-            List<CpuUsageRateByHour> oldData = Arrays.asList(new CpuUsageRateByHour());
-            List<CpuUsageRateByHourBackup> backupData = Arrays.asList(new CpuUsageRateByHourBackup());
+        void successBackupCpuUsageStatsByHourTest() {
+            List<CpuUsageRateByHour> oldData = List.of(new CpuUsageRateByHour());
+            List<CpuUsageRateByHourBackup> backupData = List.of(new CpuUsageRateByHourBackup());
 
             when(buildFactory.toBackupDataByHourStats(oldData)).thenReturn(backupData);
             cpuMonitoringBackupService.backupCpuUsageStatsByHour(oldData);
@@ -165,18 +166,19 @@ public class CpuMonitoringBackupServiceTest {
 
         @Test
         @DisplayName("시 단위 CPU 사용량 백업 - 예외 처리 체크")
-        void failBackupCpuUsageStatsByHourTest() throws Exception{
-            List<CpuUsageRateByHour> oldData = Arrays.asList(new CpuUsageRateByHour());
+        void failBackupCpuUsageStatsByHourTest() {
+            List<CpuUsageRateByHour> oldData = List.of(new CpuUsageRateByHour());
             List<CpuUsageRateByHourBackup> emptyBackupData = Collections.emptyList();
 
             when(buildFactory.toBackupDataByHourStats(oldData)).thenReturn(emptyBackupData);
 
-            ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
-                cpuMonitoringBackupService.backupCpuUsageStatsByHour(oldData);
-            });
+            ProcessCustomException exception = assertThrows(ProcessCustomException.class,
+                    () -> cpuMonitoringBackupService.backupCpuUsageStatsByHour(oldData));
 
-            assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), "예외 경우가 일치하지 않습니다.");
+            assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), NOT_MATCH_EXCEPTION_MESSAGE);
+
         }
+
     }
 
     @Nested
@@ -185,9 +187,9 @@ public class CpuMonitoringBackupServiceTest {
 
         @Test
         @DisplayName("일 단위 CPU 사용량 백업")
-        void successBackupCpuUsageStatsByDayTest() throws Exception{
-            List<CpuUsageRateByDay> oldData = Arrays.asList(new CpuUsageRateByDay());
-            List<CpuUsageRateByDayBackup> backupData = Arrays.asList(new CpuUsageRateByDayBackup());
+        void successBackupCpuUsageStatsByDayTest() {
+            List<CpuUsageRateByDay> oldData = List.of(new CpuUsageRateByDay());
+            List<CpuUsageRateByDayBackup> backupData = List.of(new CpuUsageRateByDayBackup());
             when(buildFactory.toBackupDataByDayStats(eq(oldData))).thenReturn(backupData);
             cpuMonitoringBackupService.backupCpuUsageStatsByDay(oldData);
 
@@ -198,17 +200,16 @@ public class CpuMonitoringBackupServiceTest {
 
         @Test
         @DisplayName("일 단위 CPU 사용량 백업 - 예외 처리 체크")
-        void failBackupCpuUsageStatsByDayTest() throws ProcessCustomException{
-            List<CpuUsageRateByDay> oldData = Arrays.asList(new CpuUsageRateByDay());
+        void failBackupCpuUsageStatsByDayTest() throws ProcessCustomException {
+            List<CpuUsageRateByDay> oldData = List.of(new CpuUsageRateByDay());
             List<CpuUsageRateByDayBackup> emptyBackupData = Collections.emptyList();
 
             when(buildFactory.toBackupDataByDayStats(oldData)).thenReturn(emptyBackupData);
 
-            ProcessCustomException exception = assertThrows(ProcessCustomException.class, () -> {
-                cpuMonitoringBackupService.backupCpuUsageStatsByDay(oldData);
-            });
+            ProcessCustomException exception = assertThrows(ProcessCustomException.class,
+                    () -> cpuMonitoringBackupService.backupCpuUsageStatsByDay(oldData));
 
-            assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), "예외 경우가 일치하지 않습니다.");
+            assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), NOT_MATCH_EXCEPTION_MESSAGE);
 
         }
     }

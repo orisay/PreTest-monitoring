@@ -35,7 +35,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import static com.tera.pretest.core.contant.MonitoringConstant.ONE_DAY;
+import static com.tera.pretest.core.constant.MonitoringConstant.ONE_DAY;
 import static com.tera.pretest.core.exception.restful.CustomExceptionCode.NOT_FOUND_DATA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -98,8 +98,6 @@ public class CpuMonitoringServiceIntegratedTests {
     @Qualifier("FixedTestClock")
     private Clock testClock;
 
-    private DateTimeFormatter dateTimeFormatter;
-
     private final String NOT_MATCH_EXCEPTION = "예외가 일치하지 않습니다.";
     private final String NOT_MATCH_EXCEPTION_MESSAGE = "예외 메세지가 일치하지 않습니다.";
 
@@ -108,7 +106,6 @@ public class CpuMonitoringServiceIntegratedTests {
     public void setupBasic() {
         log.info("Calling setupBasic");
         timeProvider.setClockFixedTime(testClock);
-        dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     }
 
     @AfterEach
@@ -170,9 +167,8 @@ public class CpuMonitoringServiceIntegratedTests {
         public void resultValueIsEmpty() {
             cpuUsageRateByMinuteRepository.deleteAll();
 
-            CustomException exception = assertThrows(CustomException.class, () -> {
-                cpuMonitoringService.getCpuUsageRateByMinute(new GetCpuUsageRateByMinute(startTime));
-            }, NOT_MATCH_EXCEPTION);
+            CustomException exception = assertThrows(CustomException.class, () ->
+                    cpuMonitoringService.getCpuUsageRateByMinute(new GetCpuUsageRateByMinute(startTime)));
 
             assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), NOT_MATCH_EXCEPTION_MESSAGE);
         }
@@ -233,9 +229,8 @@ public class CpuMonitoringServiceIntegratedTests {
         public void resultValueIsEmpty() {
             cpuUsageRateByHourRepository.deleteAll();
 
-            CustomException exception = assertThrows(CustomException.class, () -> {
-                cpuMonitoringService.getCpuUsageRateByHour(new GetCpuUsageRateByHour(startDay));
-            }, NOT_MATCH_EXCEPTION);
+            CustomException exception = assertThrows(CustomException.class, () ->
+                    cpuMonitoringService.getCpuUsageRateByHour(new GetCpuUsageRateByHour(startDay)), NOT_MATCH_EXCEPTION);
 
             assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), NOT_MATCH_EXCEPTION_MESSAGE);
         }
@@ -318,9 +313,8 @@ public class CpuMonitoringServiceIntegratedTests {
         public void resultValueIsEmpty() {
             cpuUsageRateByDayRepository.deleteAll();
 
-            CustomException exception = assertThrows(CustomException.class, () -> {
-                cpuMonitoringService.getCpuUsageRateByDay(new GetCpuUsageRateByDay(startDay, endDay));
-            }, NOT_MATCH_EXCEPTION);
+            CustomException exception = assertThrows(CustomException.class, () ->
+                cpuMonitoringService.getCpuUsageRateByDay(new GetCpuUsageRateByDay(startDay, endDay)));
 
             assertEquals(NOT_FOUND_DATA.getMessage(), exception.getMessage(), NOT_MATCH_EXCEPTION_MESSAGE);
         }

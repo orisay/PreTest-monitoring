@@ -9,7 +9,6 @@ import com.tera.pretest.context.cpumonitoring.dto.output.ResultCpuUsageRateByMin
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByDay;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByHour;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
-import com.tera.pretest.context.cpumonitoring.factory.BuildFactory;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByDayRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByHourRepository;
 import com.tera.pretest.context.cpumonitoring.repository.base.CpuUsageRateByMinuteRepository;
@@ -26,13 +25,13 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 
-import static com.tera.pretest.core.contant.MonitoringConstant.ONE_DAY;
+import static com.tera.pretest.core.constant.MonitoringConstant.ONE_DAY;
+import static com.tera.pretest.cpumonitoring.core.constant.TestConstant.RESULT_EMPTY;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -62,9 +61,6 @@ public class CpuMonitoringServiceTest {
     @Mock
     private CpuUsageRateByDayRepository cpuUsageRateByDayRepository;
 
-    @Mock
-    private BuildFactory buildFactory;
-
     @InjectMocks
     private CpuMonitoringService cpuMonitoringService;
 
@@ -91,7 +87,7 @@ public class CpuMonitoringServiceTest {
 
         @Test
         @DisplayName("분 단위 CPU 사용률 조회 성공")
-        void successGetCpuUsageRateByMinuteTest() throws Exception {
+        void successGetCpuUsageRateByMinuteTest() {
             GetCpuUsageRateByMinute mockRequest = Mockito.mock(GetCpuUsageRateByMinute.class);
             String startTimeString = "2024-05-23T01:00:00.000+09:00";
             ZonedDateTime startTime = ZonedDateTime.parse(startTimeString, formatter);
@@ -112,12 +108,13 @@ public class CpuMonitoringServiceTest {
             verify(dateUtil).addOneHour(eq(startTime));
             verify(cpuUsageRateByMinuteRepository).findByCreateTimeBetween(startTime, endTime);
 
-            assertFalse("빈 객체 반환.", result.getStatsUsage().isEmpty());
+            assertFalse(RESULT_EMPTY, result.getStatsUsage().isEmpty());
+
         }
 
         @Test
         @DisplayName("분 단위 CPU 사용률 - 조건문 테스트")
-        void failGetCpuUsageRateByMinuteTest() throws Exception {
+        void failGetCpuUsageRateByMinuteTest() {
             GetCpuUsageRateByMinute mockRequest = Mockito.mock(GetCpuUsageRateByMinute.class);
             String startTimeString = "2024-05-23T00:00:00.000+09:00";
             ZonedDateTime startTime = ZonedDateTime.parse(startTimeString, formatter);
@@ -139,7 +136,9 @@ public class CpuMonitoringServiceTest {
             verify(dateUtil).truncateZonedDateTimeToHour(any(ZonedDateTime.class));
             verify(dateUtil).addOneHour(eq(startTime));
             verify(cpuUsageRateByMinuteRepository).findByCreateTimeBetween(startTime, endTime);
+
         }
+
     }
 
     @Nested
@@ -148,7 +147,7 @@ public class CpuMonitoringServiceTest {
 
         @Test
         @DisplayName("시 단위 CPU 사용률 조회 성공")
-        void successGetCpuUsageRateByHourTest() throws Exception {
+        void successGetCpuUsageRateByHourTest() {
             GetCpuUsageRateByHour mockRequest = Mockito.mock(GetCpuUsageRateByHour.class);
             String startDayString = "2024-05-23T00:00:00.000+09:00";
             ZonedDateTime startDay = ZonedDateTime.parse(startDayString, formatter);
@@ -176,7 +175,7 @@ public class CpuMonitoringServiceTest {
 
         @Test
         @DisplayName("시 단위 CPU 사용률 조회 - 조건문")
-        void failGetCpuUsageRateByHourTest() throws Exception {
+        void failGetCpuUsageRateByHourTest() {
             GetCpuUsageRateByHour mockRequest = Mockito.mock(GetCpuUsageRateByHour.class);
             String startDayString = "2024-05-23T00:00:00.000+09:00";
             ZonedDateTime startDay = ZonedDateTime.parse(startDayString, formatter);
@@ -189,15 +188,13 @@ public class CpuMonitoringServiceTest {
             when(dateUtil.addOneDay(eq(startDay))).thenReturn(endDay);
             when(cpuUsageRateByHourRepository.findByCreateTimeBetween(startDay, endDay))
                     .thenReturn(Collections.emptyList());
-            assertThrows(CustomException.class, () -> {
-                cpuMonitoringService.getCpuUsageRateByHour(mockRequest);
-            });
+            assertThrows(CustomException.class,
+                    () -> cpuMonitoringService.getCpuUsageRateByHour(mockRequest));
 
             verify(mockRequest).getStartDay();
             verify(dateUtil).truncateZonedDateTimeToDay(any(ZonedDateTime.class));
             verify(dateUtil).addOneDay(eq(startDay));
             verify(cpuUsageRateByHourRepository).findByCreateTimeBetween(startDay, endDay);
-
 
         }
 
@@ -209,7 +206,7 @@ public class CpuMonitoringServiceTest {
 
         @Test
         @DisplayName("일 단위 CPU 사용률 조회 성공")
-        void successGetCpuUsageRateByDayTest() throws Exception {
+        void successGetCpuUsageRateByDayTest() {
             GetCpuUsageRateByDay mockRequest = Mockito.mock(GetCpuUsageRateByDay.class);
             String startDayString = "2024-05-20T00:00:00.000+09:00";
             ZonedDateTime startDay = ZonedDateTime.parse(startDayString, formatter);
@@ -234,19 +231,19 @@ public class CpuMonitoringServiceTest {
 
             ResultCpuUsageRateByDay result = cpuMonitoringService.getCpuUsageRateByDay(mockRequest);
 
-            assertFalse("빈 객체 반환", result.getStatsUsage().isEmpty());
+            assertFalse(RESULT_EMPTY, result.getStatsUsage().isEmpty());
 
             verify(dateUtil).truncateZonedDateTimeToDay(mockRequest.getStartDay());
             verify(dateUtil).truncateZonedDateTimeToDay(mockRequest.getEndDay());
             verify(dateUtil).isSameDay(endDay);
             verify(dateUtil).addOneDay(endDay);
-            verify(cpuUsageRateByDayRepository).findByCreateTimeBetween(startDay,exactEndDay);
+            verify(cpuUsageRateByDayRepository).findByCreateTimeBetween(startDay, exactEndDay);
 
         }
 
         @Test
         @DisplayName("일 단위 CPU 사용률 조회 실패")
-        void failGetCpuUsageRateByDayTest() throws Exception {
+        void failGetCpuUsageRateByDayTest() {
             GetCpuUsageRateByDay mockRequest = Mockito.mock(GetCpuUsageRateByDay.class);
             String startDayString = "2024-05-20T00:00:00.000+09:00";
             ZonedDateTime startDay = ZonedDateTime.parse(startDayString, formatter);
@@ -263,20 +260,18 @@ public class CpuMonitoringServiceTest {
 
             ZonedDateTime exactEndDay = endDay;
 
-            when(cpuUsageRateByDayRepository.findByCreateTimeBetween(startDay, endDay))
+            when(cpuUsageRateByDayRepository.findByCreateTimeBetween(startDay, exactEndDay))
                     .thenReturn(Collections.emptyList());
-            assertThrows(CustomException.class, () -> {
-                cpuMonitoringService.getCpuUsageRateByDay(new GetCpuUsageRateByDay(startDay, exactEndDay));
-            });
+            assertThrows(CustomException.class, () ->
+                    cpuMonitoringService.getCpuUsageRateByDay(new GetCpuUsageRateByDay(startDay, exactEndDay)));
 
             verify(dateUtil).truncateZonedDateTimeToDay(mockRequest.getStartDay());
             verify(dateUtil).truncateZonedDateTimeToDay(mockRequest.getEndDay());
             verify(dateUtil).isSameDay(endDay);
-            verify(cpuUsageRateByDayRepository).findByCreateTimeBetween(startDay,exactEndDay);
-
+            verify(cpuUsageRateByDayRepository).findByCreateTimeBetween(startDay, exactEndDay);
 
         }
 
-
     }
+
 }

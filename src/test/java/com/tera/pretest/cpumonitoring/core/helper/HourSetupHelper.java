@@ -1,6 +1,5 @@
 package com.tera.pretest.cpumonitoring.core.helper;
 
-import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByDay;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByHour;
 import com.tera.pretest.context.cpumonitoring.entity.base.CpuUsageRateByMinute;
 import com.tera.pretest.context.cpumonitoring.factory.BuildFactory;
@@ -20,7 +19,7 @@ import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
 
-import static com.tera.pretest.core.contant.MonitoringConstant.DELETE_FLAG;
+import static com.tera.pretest.core.constant.MonitoringConstant.DELETE_FLAG;
 
 @Log4j2
 @Transactional

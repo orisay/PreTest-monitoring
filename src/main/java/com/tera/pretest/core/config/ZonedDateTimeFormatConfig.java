@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-import static com.tera.pretest.core.contant.MonitoringConstant.TIME_ZONE;
+import static com.tera.pretest.core.constant.MonitoringConstant.TIME_ZONE;
 
 
 @Log4j2

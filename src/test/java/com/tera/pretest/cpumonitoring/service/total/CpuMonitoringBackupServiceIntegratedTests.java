@@ -32,16 +32,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.awt.event.FocusEvent;
 import java.time.Clock;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static com.tera.pretest.core.contant.MonitoringConstant.DELETE_FLAG;
+import static com.tera.pretest.core.constant.MonitoringConstant.DELETE_FLAG;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -62,14 +60,9 @@ public class CpuMonitoringBackupServiceIntegratedTests {
     private final CpuUsageRateByDayBackupRepository cpuUsageRateByDayBackupRepository;
     private final BuildFactory buildFactory;
     private final CpuMonitoringBackupService cpuMonitoringBackupService;
-
     private final MinuteSetupHelper minuteSetupHelper;
-
     private final HourSetupHelper hourSetupHelper;
-
     private final DaySetupHelper daySetupHelper;
-
-    private DateTimeFormatter dateTimeFormatter;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -84,10 +77,6 @@ public class CpuMonitoringBackupServiceIntegratedTests {
     @Autowired
     @Qualifier("FixedTestClock")
     private Clock testClock;
-
-    private final String RELATED_DB_EXCEPTION = "DB 관련 모든 경우 에러 케이스";
-    private final String NOT_MATCH_EXCEPTION = "예외가 일치하지 않습니다.";
-
 
     @Autowired
     public CpuMonitoringBackupServiceIntegratedTests(CpuUsageRateByMinuteRepository cpuUsageRateByMinuteRepository
@@ -115,13 +104,14 @@ public class CpuMonitoringBackupServiceIntegratedTests {
     @BeforeEach
     public void setupCommon() {
         log.debug("Calling setupCommon");
-        dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        timeProvider.setClockFixedTime(testClock);
     }
 
 
     @AfterEach
     public void shutUpCommon() {
         log.debug("Calling shutUpCommon");
+        timeProvider.setClockFixedTime(baseClock);
         entityManager.clear();
     }
 
@@ -143,18 +133,20 @@ public class CpuMonitoringBackupServiceIntegratedTests {
             testDataSettingProcessForBackup();
         }
 
+        @AfterEach
+        public void shutUp() {
+            entityManager.clear();
+        }
+
+        @Test
+        @DisplayName("백업 전 데이터 설정")
+        @Transactional
         public void testDataSettingProcessForBackup() {
             CpuUsageRateByMinute firstDbData = minuteSetupHelper.getFirstDbData();
             CpuUsageRateByMinute secondDbData = minuteSetupHelper.getSecondDbData();
             oldData = Arrays.asList(firstDbData, secondDbData);
             List<CpuUsageRateByMinuteBackup> backupData = buildFactory.toBackupDataByMinuteStats(oldData);
             resultData = cpuUsageRateByMinuteBackupRepository.saveAll(backupData);
-        }
-
-        @AfterEach
-        public void shutUp() {
-            cpuUsageRateByMinuteRepository.deleteAll();
-            cpuUsageRateByMinuteBackupRepository.deleteAll();
         }
 
         @Test
@@ -185,9 +177,7 @@ public class CpuMonitoringBackupServiceIntegratedTests {
             log.debug("Calling backupValueIsEmpty oldData init after Value:{}", oldData);
 
             Future<Void> result = cpuMonitoringBackupService.backupCpuUsageStatsByMinute(oldData);
-            ExecutionException exception = assertThrows(ExecutionException.class, () -> {
-                result.get();
-            });
+            ExecutionException exception = assertThrows(ExecutionException.class, () -> result.get());
 
             Throwable cause = exception.getCause();
             log.debug("exception.getClass :{}",cause.getClass());
@@ -218,12 +208,14 @@ public class CpuMonitoringBackupServiceIntegratedTests {
 
         @AfterEach
         public void shutUp() {
-            cpuUsageRateByHourRepository.deleteAll();
-            cpuUsageRateByHourBackupRepository.deleteAll();
+            entityManager.clear();
         }
 
 
-        private void testDataSettingProcessForBackup() {
+        @Test
+        @DisplayName("백업 전 데이터 설정")
+        @Transactional
+        public void testDataSettingProcessForBackup() {
             CpuUsageRateByHour firstDbData = hourSetupHelper.getFirstDbData();
             CpuUsageRateByHour secondDbData = hourSetupHelper.getSecondDbData();
             oldData = Arrays.asList(firstDbData, secondDbData);
@@ -260,9 +252,7 @@ public class CpuMonitoringBackupServiceIntegratedTests {
             log.debug("Calling backupValueIsEmpty oldData init after Value:{}", oldData);
 
             Future<Void> result = cpuMonitoringBackupService.backupCpuUsageStatsByHour(oldData);
-            ExecutionException exception = assertThrows(ExecutionException.class, () -> {
-                result.get();
-            });
+            ExecutionException exception = assertThrows(ExecutionException.class, () -> result.get());
 
             Throwable cause = exception.getCause();
             log.debug("exception.getClass :{}",cause.getClass());
@@ -289,10 +279,12 @@ public class CpuMonitoringBackupServiceIntegratedTests {
 
         @AfterEach
         public void shutUp() {
-            cpuUsageRateByDayRepository.deleteAll();
-            cpuUsageRateByDayBackupRepository.deleteAll();
+            entityManager.clear();
         }
 
+        @Test
+        @DisplayName("백업 전 데이터 설정")
+        @Transactional
         public void testDataSettingProcessForBackup() {
             CpuUsageRateByDay firstDbData = daySetupHelper.getFirstDbData();
             CpuUsageRateByDay secondDbData = daySetupHelper.getSecondDbData();
@@ -329,9 +321,7 @@ public class CpuMonitoringBackupServiceIntegratedTests {
             log.debug("Calling backupValueIsEmpty oldData init after Value:{}", oldData);
 
             Future<Void> result = cpuMonitoringBackupService.backupCpuUsageStatsByDay(oldData);
-            ExecutionException exception = assertThrows(ExecutionException.class, () -> {
-                result.get();
-            });
+            ExecutionException exception = assertThrows(ExecutionException.class, () -> result.get());
 
             Throwable cause = exception.getCause();
             log.debug("exception.getClass :{}",cause.getClass());
@@ -358,6 +348,8 @@ public class CpuMonitoringBackupServiceIntegratedTests {
             entityManager.flush();
         }
 
+        @Test
+        @DisplayName("하드 딜리트 전 데이터 설정")
         @Transactional
         public void testDataSettingProcessForHardDelete() {
             List<CpuUsageRateByMinute> checkData = cpuUsageRateByMinuteRepository.findByFlag(DELETE_FLAG);
@@ -407,6 +399,8 @@ public class CpuMonitoringBackupServiceIntegratedTests {
             entityManager.flush();
         }
 
+        @Test
+        @DisplayName("하드 딜리트 전 데이터 설정")
         @Transactional
         public void testDataSettingProcessForHardDelete() {
             List<CpuUsageRateByHour> checkData = cpuUsageRateByHourRepository.findByFlag(DELETE_FLAG);
@@ -454,6 +448,8 @@ public class CpuMonitoringBackupServiceIntegratedTests {
             entityManager.flush();
         }
 
+        @Test
+        @DisplayName("하드 딜리트 전 데이터 설정")
         @Transactional
         public void testDataSettingProcessForHardDelete() {
             List<CpuUsageRateByDay> checkData = cpuUsageRateByDayRepository.findByFlag(DELETE_FLAG);
