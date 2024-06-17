@@ -2,7 +2,9 @@
 
 <h1> CPU 모니터링 </h1>
 
-<div></div>
+<div>
+<img src="https://github.com/orisay/PreTest-monitoring/blob/ec2245475c8154338e6ec1e284eccdba5551a182/software_architecture/State%20Diagram.jpg">
+</div>
 <h2>1. 분 단위 CPU 모니터링 데이터</h2>
 <ul>
 <li>목적: 실시간 CPU 사용률 모니터링</li>
